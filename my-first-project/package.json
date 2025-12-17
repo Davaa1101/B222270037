@@ -49,11 +49,25 @@
   "jest": {
     "testEnvironment": "node",
     "coveragePathIgnorePatterns": [
-      "/node_modules/"
+      "/node_modules/",
+      "/coverage/",
+      "/frontend/"
     ],
     "testMatch": [
       "**/__tests__/**/*.js",
       "**/?(*.)+(spec|test).js"
+    ],
+    "testTimeout": 30000,
+    "globalSetup": "./jest.setup.js",
+    "globalTeardown": "./jest.teardown.js",
+    "collectCoverageFrom": [
+      "**/*.js",
+      "!**/node_modules/**",
+      "!**/coverage/**",
+      "!**/frontend/**",
+      "!**/__tests__/**",
+      "!**/seed-*.js",
+      "!jest.*.js"
     ]
   }
 }
