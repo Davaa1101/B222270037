@@ -1,0 +1,16 @@
+{
+  "name": "cs316-backend",
+  "version": "1.0.0",
+  "description": "Barter Platform Backend for Railway",
+  "main": "my-first-project/server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "cd my-first-project && npm install && node server.js",
+    "build": "cd my-first-project && npm install"
+  },
+  "keywords": ["barter", "backend"],
+  "author": "",
+  "license": "ISC"
+}

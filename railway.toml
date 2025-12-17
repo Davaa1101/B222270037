@@ -1,0 +1,7 @@
+[start]
+cmd = "npm start"
+cwd = "my-first-project"
+
+[build]
+cmd = "npm install"
+cwd = "my-first-project"
