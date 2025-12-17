@@ -13,7 +13,6 @@ const ItemDetail = () => {
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showOfferModal, setShowOfferModal] = useState(false);
 
   useEffect(() => {
     loadItem();

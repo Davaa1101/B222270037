@@ -10,7 +10,7 @@ const Home = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('newest');
   const [alert, setAlert] = useState(null);
 

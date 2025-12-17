@@ -7,7 +7,7 @@ import Alert from './Alert';
 const OffersList = () => {
   const { itemId } = useParams(); // Optional: for viewing offers on a specific item
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -139,7 +139,7 @@ const OffersList = () => {
                     color: activeTab === 'received' ? '#667eea' : '#6c757d'
                   }}
                 >
-                  <i className="fas fa-inbox me-2"></i>Хүлээн авсан ({offers.filter(o => activeTab === 'received').length})
+                  <i className="fas fa-inbox me-2"></i>Хүлээн авсан ({offers.filter(_o => activeTab === 'received').length})
                 </button>
               </li>
               <li className="nav-item">
@@ -152,7 +152,7 @@ const OffersList = () => {
                     color: activeTab === 'sent' ? '#667eea' : '#6c757d'
                   }}
                 >
-                  <i className="fas fa-paper-plane me-2"></i>Илгээсэн ({offers.filter(o => activeTab === 'sent').length})
+                  <i className="fas fa-paper-plane me-2"></i>Илгээсэн ({offers.filter(_o => activeTab === 'sent').length})
                 </button>
               </li>
             </ul>

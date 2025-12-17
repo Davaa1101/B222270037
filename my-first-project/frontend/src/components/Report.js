@@ -7,7 +7,7 @@ import Alert from './Alert';
 const Report = () => {
   const { targetType, targetId } = useParams(); // targetType: 'item', 'user', 'offer'
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState(null);

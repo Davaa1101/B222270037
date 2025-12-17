@@ -9,7 +9,6 @@ import Alert from './Alert';
 const Profile = () => {
   const { userId } = useParams();
   const { user: currentUser, updateUser } = useAuth();
-  const navigate = useNavigate();
   
   const [profile, setProfile] = useState(null);
   const [userItems, setUserItems] = useState([]);
