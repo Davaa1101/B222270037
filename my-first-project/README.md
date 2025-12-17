@@ -81,7 +81,7 @@ npm run dev
 npm start
 ```
 
-6. Вэб хөтчөөр http://localhost:3000 руу орох
+6. Вэб хөтчөөр http://localhost:3001 руу орох
 
 ## API Documentation
 
