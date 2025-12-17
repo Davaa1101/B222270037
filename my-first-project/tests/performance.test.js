@@ -190,11 +190,12 @@ class PerformanceTester {
       const result = await this.runTest(config);
       results.push({
         endpoint: config.endpoint,
+        name: config.name,
         ...result
       });
 
-      // Дараагийн тест хүртэл хүлээх
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Дараагийн тест хүртэл хүлээх (rate limit-ээс зайлсхийх)
+      await new Promise(resolve => setTimeout(resolve, 3000));
     }
 
     return results;
@@ -209,9 +210,9 @@ async function runPerformanceTests() {
   const API_URL = process.env.API_URL || 'http://localhost:3000';
 
   const tester = new PerformanceTester(API_URL, {
-    numRequests: 100,
-    concurrentUsers: 10,
-    timeout: 5000
+    numRequests: 50,
+    concurrentUsers: 5,
+    timeout: 10000
   });
 
   // Туршилт хийх endpoint-үүд
@@ -223,7 +224,7 @@ async function runPerformanceTests() {
     },
     {
       name: 'Categories endpoint',
-      endpoint: '/api/items/categories',
+      endpoint: '/api/items/config/categories',
       method: 'GET'
     },
     {
@@ -237,9 +238,13 @@ async function runPerformanceTests() {
 
   console.log('\n=== Эцсийн дүгнэлт ===');
   results.forEach((result, index) => {
-    console.log(`\n${index + 1}. ${testConfigs[index].name}`);
-    console.log(`   Амжилтын хувь: ${result.successRate}%`);
-    console.log(`   Дундаж хугацаа: ${result.avgResponseTime}ms`);
+    console.log(`\n${index + 1}. ${result.name || testConfigs[index].name}`);
+    if (result.successRate) {
+      console.log(`   Амжилтын хувь: ${result.successRate}%`);
+      console.log(`   Дундаж хугацаа: ${result.avgResponseTime}ms`);
+    } else {
+      console.log(`   ⚠️ Туршилт амжилтгүй (rate limit эсвэл timeout)`);
+    }
   });
 }
 

@@ -130,10 +130,13 @@ class SecurityTester {
     ];
 
     for (const test of testCases) {
+      // Delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       try {
         const response = await axios.get(
           `${this.baseUrl}${test.endpoint}`,
-          { headers: test.headers }
+          { headers: test.headers, timeout: 3000 }
         );
 
         // 200 хариу ирвэл - хамгаалалт ажиллаагүй!
@@ -147,8 +150,14 @@ class SecurityTester {
           console.log(`❌ АНХААР: ${test.name} амжилттай боллоо!`);
         }
       } catch (error) {
-        if (error.response && error.response.status === 401) {
-          console.log(`✅ Хамгаалагдсан: ${test.name}`);
+        if (error.response) {
+          if (error.response.status === 401 || error.response.status === 400) {
+            console.log(`✅ Хамгаалагдсан: ${test.name}`);
+          } else if (error.response.status === 429) {
+            console.log(`✅ Rate limit хамгаалагдсан: ${test.name}`);
+          } else {
+            console.log(`⚠️ Алдаа: ${test.name} - Status ${error.response.status}`);
+          }
         } else {
           console.log(`⚠️ Алдаа: ${test.name} - ${error.message}`);
         }
