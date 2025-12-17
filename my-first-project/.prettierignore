@@ -1,0 +1,11 @@
+node_modules/
+frontend/build/
+coverage/
+uploads/
+*.log
+.env
+.env.local
+.env.test
+*.min.js
+dist/
+build/
