@@ -199,7 +199,7 @@ const AddItem = () => {
     setLoading(true);
     
     try {
-      let itemData = {
+      const itemData = {
         title: formData.title.trim(),
         description: formData.description.trim(),
         category: formData.category,
