@@ -118,3 +118,6 @@ npm start
 - `GET /api/admin/dashboard` - Admin dashboard (Admin auth шаардлагатай)
 - `GET /api/admin/users` - Хэрэглэгчид удирдах (Admin auth шаардлагатай)
 - `GET /api/admin/reports` - Гомдлууд удирдах (Admin auth шаардлагатай)
+
+## CI/CD Pipeline
+This project uses GitHub Actions for continuous integration.
