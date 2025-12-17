@@ -117,8 +117,8 @@ jobs:
         with:
           name: test-results-node-${{ matrix.node-version }}
           path: |
-            coverage/
-            jest-report.json
+            ${{ env.WORKING_DIR }}/coverage/
+            ${{ env.WORKING_DIR }}/jest-report.json
           retention-days: 7
 
   # ===================================
@@ -142,6 +142,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: '${{ env.WORKING_DIR }}/package-lock.json'
 
       - name: 📦 Install dependencies
         run: |
@@ -204,9 +205,9 @@ jobs:
         with:
           name: security-reports-${{ github.sha }}
           path: |
-            npm-audit.json
-            snyk-report.json
-            eslint-security.json
+            ${{ env.WORKING_DIR }}/npm-audit.json
+            ${{ env.WORKING_DIR }}/snyk-report.json
+            ${{ env.WORKING_DIR }}/eslint-security.json
           retention-days: 30
 
   # ===================================
@@ -230,6 +231,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: '${{ env.WORKING_DIR }}/package-lock.json'
 
       - name: 📦 Install dependencies
         run: |
