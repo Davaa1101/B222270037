@@ -3,7 +3,7 @@
 ## 1. GitHub Secrets тохируулах
 
 ### Шаг 1: Repository Settings рүү очих
-1. GitHub repository (`Davaa1101/CS316`) рүү очих
+1. GitHub repository (`Davaa1101/B222270037`) рүү очих
 2. **Settings** tab дарах
 3. Зүүн талын меню: **Secrets and variables** → **Actions**
 
@@ -101,7 +101,7 @@ Value: your-codecov-token-here
 
 ```bash
 # Таны локал машин дээр:
-cd C:\Users\user\CS316\my-first-project
+cd C:\Users\user\B222270037\my-first-project
 
 # Branch шалгах
 git status
