@@ -111,7 +111,7 @@ router.get('/dashboard', async (req, res) => {
     });
   } catch (error) {
     console.error('Get admin dashboard error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -127,7 +127,7 @@ router.get('/users', [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Invalid query parameters', 
+        message: 'Хүсэлтийн параметр буруу байна', 
         errors: errors.array() 
       });
     }
@@ -180,7 +180,7 @@ router.get('/users', [
     });
   } catch (error) {
     console.error('Get users error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -193,7 +193,7 @@ router.patch('/users/:id/status', [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -203,12 +203,12 @@ router.patch('/users/:id/status', [
 
     const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'Хэрэглэгч олдсонгүй' });
     }
 
     // Don't allow changing admin status
     if (user.role === 'admin') {
-      return res.status(403).json({ message: 'Cannot change admin user status' });
+      return res.status(403).json({ message: 'Админ хэрэглэгчийн төлөв өөрчлөх боломжгүй' });
     }
 
     const oldStatus = user.status;
@@ -250,7 +250,7 @@ router.patch('/users/:id/status', [
     }
 
     res.json({
-      message: 'User status updated successfully',
+      message: 'Хэрэглэгчийн төлөв амжилттай шинэчлэгдлээ',
       user: {
         id: user._id,
         name: user.name,
@@ -260,7 +260,7 @@ router.patch('/users/:id/status', [
     });
   } catch (error) {
     console.error('Update user status error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -277,7 +277,7 @@ router.get('/items', [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Invalid query parameters', 
+        message: 'Хүсэлтийн параметр буруу байна', 
         errors: errors.array() 
       });
     }
@@ -325,7 +325,7 @@ router.get('/items', [
     });
   } catch (error) {
     console.error('Get items error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -339,7 +339,7 @@ router.delete('/items/:id', [
 
     const item = await Item.findById(id).populate('owner', 'name email');
     if (!item) {
-      return res.status(404).json({ message: 'Item not found' });
+      return res.status(404).json({ message: 'Зар олдсонгүй' });
     }
 
     // Update item status instead of deleting
@@ -358,10 +358,10 @@ router.delete('/items/:id', [
       console.error('Failed to send item removal notification:', emailError);
     }
 
-    res.json({ message: 'Item removed successfully' });
+    res.json({ message: 'Зар амжилттай хасагдлаа' });
   } catch (error) {
     console.error('Remove item error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -372,7 +372,7 @@ router.get('/categories', async (req, res) => {
     res.json(categories);
   } catch (error) {
     console.error('Get categories error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -387,7 +387,7 @@ router.post('/categories', [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -397,7 +397,7 @@ router.post('/categories', [
     // Check if category name already exists
     const existingCategory = await Category.findOne({ name });
     if (existingCategory) {
-      return res.status(400).json({ message: 'Category name already exists' });
+      return res.status(400).json({ message: 'Ангиллын нэр аль хэдийн байна' });
     }
 
     const category = new Category({
@@ -411,12 +411,12 @@ router.post('/categories', [
     await category.save();
 
     res.status(201).json({
-      message: 'Category created successfully',
+      message: 'Ангилал амжилттай үүсгэгдлээ',
       category
     });
   } catch (error) {
     console.error('Create category error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -432,7 +432,7 @@ router.put('/categories/:id', [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -447,16 +447,16 @@ router.put('/categories/:id', [
     );
 
     if (!category) {
-      return res.status(404).json({ message: 'Category not found' });
+      return res.status(404).json({ message: 'Ангилал олдсонгүй' });
     }
 
     res.json({
-      message: 'Category updated successfully',
+      message: 'Ангилал амжилттай шинэчлэгдлээ',
       category
     });
   } catch (error) {
     console.error('Update category error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -478,7 +478,7 @@ router.get('/settings', async (req, res) => {
     res.json(settingsObj);
   } catch (error) {
     console.error('Get settings error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -490,7 +490,7 @@ router.put('/settings/:key', [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -505,12 +505,12 @@ router.put('/settings/:key', [
     );
 
     res.json({
-      message: 'Setting updated successfully',
+      message: 'Тохиргоо амжилттай шинэчлэгдлээ',
       setting
     });
   } catch (error) {
     console.error('Update setting error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -571,7 +571,7 @@ router.get('/analytics/users', [
     });
   } catch (error) {
     console.error('Get user analytics error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -636,7 +636,7 @@ router.get('/analytics/items', [
     });
   } catch (error) {
     console.error('Get item analytics error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -652,7 +652,7 @@ router.get('/export/users', async (req, res) => {
     res.json(users);
   } catch (error) {
     console.error('Export users error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -668,7 +668,7 @@ router.get('/export/items', async (req, res) => {
     res.json(items);
   } catch (error) {
     console.error('Export items error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 

@@ -39,7 +39,7 @@ const upload = multer({
     if (mimetype && extname) {
       return cb(null, true);
     } else {
-      cb(new Error('Only images are allowed'));
+      cb(new Error('Зөвхөн зургийн файл зөвшөөрнө'));
     }
   }
 });
@@ -58,7 +58,7 @@ router.get('/', [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Invalid query parameters', 
+        message: 'Хүсэлтийн параметр буруу байна', 
         errors: errors.array() 
       });
     }
@@ -130,7 +130,7 @@ router.get('/', [
     });
   } catch (error) {
     console.error('Get items error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -144,7 +144,7 @@ router.get('/my', auth, async (req, res) => {
     res.json(items);
   } catch (error) {
     console.error('Get my items error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -156,7 +156,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
       .lean();
 
     if (!item) {
-      return res.status(404).json({ message: 'Item not found' });
+      return res.status(404).json({ message: 'Зар олдсонгүй' });
     }
 
     // Increment view count (only if not owner)
@@ -187,9 +187,9 @@ router.get('/:id', optionalAuth, async (req, res) => {
   } catch (error) {
     console.error('Get item error:', error);
     if (error.name === 'CastError') {
-      return res.status(400).json({ message: 'Invalid item ID' });
+      return res.status(400).json({ message: 'Зарын ID буруу байна' });
     }
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -217,7 +217,7 @@ router.post('/', auth, upload.array('images', 5), [
         });
       }
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -256,7 +256,7 @@ router.post('/', auth, upload.array('images', 5), [
     await item.populate('owner', 'name location.city location.district');
 
     res.status(201).json({
-      message: 'Item created successfully',
+      message: 'Зар амжилттай үүсгэгдлээ',
       item
     });
   } catch (error) {
@@ -267,7 +267,7 @@ router.post('/', auth, upload.array('images', 5), [
         fs.unlink(file.path, () => {});
       });
     }
-    res.status(500).json({ message: 'Server error during item creation' });
+    res.status(500).json({ message: 'Зар үүсгэх үед серверийн алдаа гарлаа', details: error.message });
   }
 });
 
@@ -286,19 +286,19 @@ router.put('/:id', auth, upload.array('newImages', 5), [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
 
     const item = await Item.findById(req.params.id);
     if (!item) {
-      return res.status(404).json({ message: 'Item not found' });
+      return res.status(404).json({ message: 'Зар олдсонгүй' });
     }
 
     // Check ownership
     if (item.owner.toString() !== req.user.userId) {
-      return res.status(403).json({ message: 'Not authorized to update this item' });
+      return res.status(403).json({ message: 'Энэ зарыг шинэчлэх эрхгүй' });
     }
 
     // Update fields
@@ -358,12 +358,12 @@ router.put('/:id', auth, upload.array('newImages', 5), [
     ).populate('owner', 'name location.city location.district');
 
     res.json({
-      message: 'Item updated successfully',
+      message: 'Зар амжилттай шинэчлэгдлээ',
       item: updatedItem
     });
   } catch (error) {
     console.error('Update item error:', error);
-    res.status(500).json({ message: 'Server error during item update' });
+    res.status(500).json({ message: 'Зар шинэчлэх үед серверийн алдаа гарлаа', details: error.message });
   }
 });
 
@@ -372,12 +372,12 @@ router.delete('/:id', auth, async (req, res) => {
   try {
     const item = await Item.findById(req.params.id);
     if (!item) {
-      return res.status(404).json({ message: 'Item not found' });
+      return res.status(404).json({ message: 'Зар олдсонгүй' });
     }
 
     // Check ownership
     if (item.owner.toString() !== req.user.userId) {
-      return res.status(403).json({ message: 'Not authorized to delete this item' });
+      return res.status(403).json({ message: 'Энэ зарыг устгах эрхгүй' });
     }
 
     // Delete associated images
@@ -388,10 +388,10 @@ router.delete('/:id', auth, async (req, res) => {
 
     await Item.findByIdAndDelete(req.params.id);
 
-    res.json({ message: 'Item deleted successfully' });
+    res.json({ message: 'Зар амжилттай устгагдлаа' });
   } catch (error) {
     console.error('Delete item error:', error);
-    res.status(500).json({ message: 'Server error during item deletion' });
+    res.status(500).json({ message: 'Зар устгах үед серверийн алдаа гарлаа', details: error.message });
   }
 });
 
@@ -400,7 +400,7 @@ router.post('/:id/favorite', auth, async (req, res) => {
   try {
     const item = await Item.findById(req.params.id);
     if (!item) {
-      return res.status(404).json({ message: 'Item not found' });
+      return res.status(404).json({ message: 'Зар олдсонгүй' });
     }
 
     const userId = req.user.userId;
@@ -415,12 +415,12 @@ router.post('/:id/favorite', auth, async (req, res) => {
     await item.save();
 
     res.json({
-      message: isFavorited ? 'Removed from favorites' : 'Added to favorites',
+      message: isFavorited ? 'Дуртайгаас хасагдлаа' : 'Дуртайд нэмэгдлээ',
       isFavorited: !isFavorited
     });
   } catch (error) {
     console.error('Toggle favorite error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -449,7 +449,7 @@ router.get('/user/my-items', auth, async (req, res) => {
     });
   } catch (error) {
     console.error('Get user items error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -460,7 +460,6 @@ router.get('/config/categories', async (req, res) => {
       .sort({ sortOrder: 1, name: 1 })
       .select('name displayName sortOrder icon');
     
-    console.log(`Found ${categories.length} categories in database`);
     
     // Format for frontend
     const formattedCategories = categories.map(cat => ({
@@ -473,8 +472,9 @@ router.get('/config/categories', async (req, res) => {
   } catch (error) {
     console.error('Get categories error:', error);
     res.status(500).json({ 
-      error: 'Failed to fetch categories',
-      message: error.message 
+      error: 'Ангиллуудыг татахад алдаа гарлаа',
+      message: error.message,
+      details: error.message
     });
   }
 });

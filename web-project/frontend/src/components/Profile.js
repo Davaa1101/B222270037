@@ -322,7 +322,7 @@ const Profile = () => {
                     </div>
                     <div className="col-6">
                       <h5 className="text-success mb-0">
-                        {userItems.filter(item => item.status === 'traded').length}
+                        {profile.profile?.totalTrades ?? 0}
                       </h5>
                       <small className="text-muted">Солигдсон</small>
                     </div>

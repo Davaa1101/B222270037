@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer');
 
 // Create transporter
 const createTransporter = () => {
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: process.env.EMAIL_PORT,
     secure: false, // true for 465, false for other ports
@@ -13,39 +13,6 @@ const createTransporter = () => {
   });
 };
 
-// Send verification email
-const sendVerificationEmail = async (email, name, verificationUrl) => {
-  const transporter = createTransporter();
-
-  const mailOptions = {
-    from: `"Barter Platform" <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject: 'Email хаягаа баталгаажуулна уу',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Сайн байна уу ${name}!</h2>
-        <p>Barter Platform-д тавтай морилно уу!</p>
-        <p>Email хаягаа баталгаажуулахын тулд доорх товч дээр дарна уу:</p>
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${verificationUrl}" 
-             style="background-color: #007bff; color: white; padding: 12px 30px; 
-                    text-decoration: none; border-radius: 5px; display: inline-block;">
-            Email баталгаажуулах
-          </a>
-        </div>
-        <p>Эсвэл доорх холбоосыг хуулж хөтчид буулгана уу:</p>
-        <p style="word-break: break-all; color: #666;">
-          <a href="${verificationUrl}">${verificationUrl}</a>
-        </p>
-        <p style="color: #666; font-size: 12px;">
-          Энэ холбоос 24 цагийн дотор дуусах болно.
-        </p>
-      </div>
-    `
-  };
-
-  await transporter.sendMail(mailOptions);
-};
 
 // Send password reset email
 const sendPasswordResetEmail = async (email, name, resetUrl) => {
@@ -120,7 +87,6 @@ const sendOfferNotification = async (email, name, itemTitle, offerMessage) => {
 };
 
 module.exports = {
-  sendVerificationEmail,
   sendPasswordResetEmail,
   sendNotificationEmail,
   sendOfferNotification

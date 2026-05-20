@@ -3,8 +3,13 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const fs = require('fs');
 const path = require('path');
-require('dotenv').config();
+
+const defaultEnvPath = path.join(__dirname, '.env');
+const productionEnvPath = path.join(__dirname, '.env.production');
+const envPath = fs.existsSync(defaultEnvPath) ? defaultEnvPath : productionEnvPath;
+require('dotenv').config({ path: envPath });
 
 const authRoutes = require('./routes/auth');
 const itemRoutes = require('./routes/items');
@@ -102,14 +107,14 @@ app.get('*', (req, res) => {
 app.use((error, req, res, next) => {
   console.error(error);
   res.status(500).json({ 
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? error.message : {}
+    message: 'Алдаа гарлаа!',
+    details: error.message
   });
 });
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+  res.status(404).json({ message: 'Зам олдсонгүй' });
 });
 
 // Export app for testing

@@ -41,7 +41,7 @@ const upload = multer({
     if (mimetype && extname) {
       return cb(null, true);
     } else {
-      cb(new Error('Only images are allowed'));
+      cb(new Error('Зөвхөн зургийн файл зөвшөөрнө'));
     }
   }
 });
@@ -54,22 +54,22 @@ router.post('/', auth, upload.array('images', 10), [
     try {
       const items = JSON.parse(value);
       if (!Array.isArray(items) || items.length === 0) {
-        throw new Error('offeredItems must be a non-empty array');
+        throw new Error('offeredItems нь хоосон биш массив байх ёстой');
       }
       items.forEach(item => {
         if (!item.title || item.title.trim().length < 3 || item.title.trim().length > 100) {
-          throw new Error('Each item must have a title between 3 and 100 characters');
+          throw new Error('Бараа бүрийн нэр 3-100 тэмдэгтийн хооронд байх ёстой');
         }
         if (!item.description || item.description.trim().length < 5 || item.description.trim().length > 500) {
-          throw new Error('Each item must have a description between 5 and 500 characters');
+          throw new Error('Бараа бүрийн тайлбар 5-500 тэмдэгтийн хооронд байх ёстой');
         }
         if (!['new', 'like_new', 'good', 'fair', 'poor'].includes(item.condition)) {
-          throw new Error('Each item must have a valid condition');
+          throw new Error('Бараа бүрийн төлөв хүчинтэй байх ёстой');
         }
       });
       return true;
     } catch (e) {
-      throw new Error('Invalid offeredItems format: ' + e.message);
+      throw new Error('offeredItems форматын алдаа: ' + e.message);
     }
   })
 ], async (req, res) => {
@@ -81,7 +81,7 @@ router.post('/', auth, upload.array('images', 10), [
         req.files.forEach(file => fs.unlink(file.path, () => {}));
       }
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -94,7 +94,7 @@ router.post('/', auth, upload.array('images', 10), [
       if (req.files) {
         req.files.forEach(file => fs.unlink(file.path, () => {}));
       }
-      return res.status(404).json({ message: 'Item not found or no longer available' });
+      return res.status(404).json({ message: 'Зар олдсонгүй эсвэл идэвхгүй болсон' });
     }
 
     // Check if user is not the owner of the item
@@ -102,7 +102,7 @@ router.post('/', auth, upload.array('images', 10), [
       if (req.files) {
         req.files.forEach(file => fs.unlink(file.path, () => {}));
       }
-      return res.status(400).json({ message: 'Cannot make offer on your own item' });
+      return res.status(400).json({ message: 'Өөрийн зар дээр санал тавих боломжгүй' });
     }
 
     // Check if user already has a pending offer for this item
@@ -116,7 +116,7 @@ router.post('/', auth, upload.array('images', 10), [
       if (req.files) {
         req.files.forEach(file => fs.unlink(file.path, () => {}));
       }
-      return res.status(400).json({ message: 'You already have a pending offer for this item' });
+      return res.status(400).json({ message: 'Та энэ зар дээр аль хэдийн хүлээгдэж буй саналтай байна' });
     }
 
     // Process uploaded images and distribute them among offered items
@@ -165,7 +165,7 @@ router.post('/', auth, upload.array('images', 10), [
     }
 
     res.status(201).json({
-      message: 'Offer created successfully',
+      message: 'Санал амжилттай үүсгэгдлээ',
       offer
     });
   } catch (error) {
@@ -174,7 +174,7 @@ router.post('/', auth, upload.array('images', 10), [
     if (req.files) {
       req.files.forEach(file => fs.unlink(file.path, () => {}));
     }
-    res.status(500).json({ message: 'Server error during offer creation' });
+    res.status(500).json({ message: 'Санал үүсгэх үед серверийн алдаа гарлаа', details: error.message });
   }
 });
 
@@ -188,7 +188,7 @@ router.get('/item/:itemId', auth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Invalid query parameters', 
+        message: 'Хүсэлтийн параметр буруу байна', 
         errors: errors.array() 
       });
     }
@@ -201,7 +201,7 @@ router.get('/item/:itemId', auth, [
     // Check if user owns the item
     const item = await Item.findById(itemId);
     if (!item || item.owner.toString() !== req.user.userId) {
-      return res.status(403).json({ message: 'Not authorized to view offers for this item' });
+      return res.status(403).json({ message: 'Энэ зарт ирсэн саналуудыг харах эрхгүй' });
     }
 
     const filter = { item: itemId };
@@ -230,7 +230,7 @@ router.get('/item/:itemId', auth, [
     });
   } catch (error) {
     console.error('Get item offers error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -244,7 +244,7 @@ router.get('/sent', auth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Invalid query parameters', 
+        message: 'Хүсэлтийн параметр буруу байна', 
         errors: errors.array() 
       });
     }
@@ -279,7 +279,7 @@ router.get('/sent', auth, [
     });
   } catch (error) {
     console.error('Get sent offers error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -293,7 +293,7 @@ router.get('/received', auth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Invalid query parameters', 
+        message: 'Хүсэлтийн параметр буруу байна', 
         errors: errors.array() 
       });
     }
@@ -328,7 +328,7 @@ router.get('/received', auth, [
     });
   } catch (error) {
     console.error('Get received offers error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -341,7 +341,7 @@ router.patch('/:id/respond', auth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -355,17 +355,17 @@ router.patch('/:id/respond', auth, [
       .populate('item', 'title');
 
     if (!offer) {
-      return res.status(404).json({ message: 'Offer not found' });
+      return res.status(404).json({ message: 'Санал олдсонгүй' });
     }
 
     // Check if user is the recipient of the offer
     if (offer.offeredTo._id.toString() !== req.user.userId) {
-      return res.status(403).json({ message: 'Not authorized to respond to this offer' });
+      return res.status(403).json({ message: 'Энэ саналыг хариулах эрхгүй' });
     }
 
     // Check if offer is still pending
     if (offer.status !== 'pending') {
-      return res.status(400).json({ message: 'Offer is no longer pending' });
+      return res.status(400).json({ message: 'Санал хүлээгдэж байгаа төлөвт биш байна' });
     }
 
     // Update offer status
@@ -407,12 +407,12 @@ router.patch('/:id/respond', auth, [
     }
 
     res.json({
-      message: action === 'accept' ? 'Offer accepted successfully' : 'Offer rejected',
+      message: action === 'accept' ? 'Санал амжилттай хүлээн авлаа' : 'Санал татгалзагдлаа',
       offer
     });
   } catch (error) {
     console.error('Respond to offer error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -423,29 +423,29 @@ router.patch('/:id/withdraw', auth, async (req, res) => {
 
     const offer = await Offer.findById(id);
     if (!offer) {
-      return res.status(404).json({ message: 'Offer not found' });
+      return res.status(404).json({ message: 'Санал олдсонгүй' });
     }
 
     // Check if user is the sender of the offer
     if (offer.offeredBy.toString() !== req.user.userId) {
-      return res.status(403).json({ message: 'Not authorized to withdraw this offer' });
+      return res.status(403).json({ message: 'Энэ саналыг цуцлах эрхгүй' });
     }
 
     // Check if offer is still pending
     if (offer.status !== 'pending') {
-      return res.status(400).json({ message: 'Can only withdraw pending offers' });
+      return res.status(400).json({ message: 'Зөвхөн хүлээгдэж буй саналыг цуцалж болно' });
     }
 
     offer.status = 'withdrawn';
     await offer.save();
 
     res.json({
-      message: 'Offer withdrawn successfully',
+      message: 'Санал амжилттай цуцлагдлаа',
       offer
     });
   } catch (error) {
     console.error('Withdraw offer error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -460,7 +460,7 @@ router.patch('/:id/complete', auth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -470,18 +470,18 @@ router.patch('/:id/complete', auth, [
 
     const offer = await Offer.findById(id);
     if (!offer) {
-      return res.status(404).json({ message: 'Offer not found' });
+      return res.status(404).json({ message: 'Санал олдсонгүй' });
     }
 
     // Check if user is involved in the offer
     const userId = req.user.userId;
     if (offer.offeredBy.toString() !== userId && offer.offeredTo.toString() !== userId) {
-      return res.status(403).json({ message: 'Not authorized to complete this offer' });
+      return res.status(403).json({ message: 'Энэ саналыг дуусгах эрхгүй' });
     }
 
     // Check if offer is accepted
     if (offer.status !== 'accepted') {
-      return res.status(400).json({ message: 'Can only complete accepted offers' });
+      return res.status(400).json({ message: 'Зөвхөн зөвшөөрөгдсөн саналыг дуусгаж болно' });
     }
 
     offer.status = 'completed';
@@ -505,12 +505,12 @@ router.patch('/:id/complete', auth, [
     });
 
     res.json({
-      message: 'Trade completed successfully',
+      message: 'Арилжаа амжилттай дууслаа',
       offer
     });
   } catch (error) {
     console.error('Complete offer error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -522,7 +522,7 @@ router.put('/:id/accept', auth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -536,17 +536,17 @@ router.put('/:id/accept', auth, [
       .populate('item', 'title');
 
     if (!offer) {
-      return res.status(404).json({ message: 'Offer not found' });
+      return res.status(404).json({ message: 'Санал олдсонгүй' });
     }
 
     // Check if user is the recipient of the offer
     if (offer.offeredTo._id.toString() !== req.user.userId) {
-      return res.status(403).json({ message: 'Not authorized to accept this offer' });
+      return res.status(403).json({ message: 'Энэ саналыг зөвшөөрөх эрхгүй' });
     }
 
     // Check if offer is still pending
     if (offer.status !== 'pending') {
-      return res.status(400).json({ message: 'Offer is no longer pending' });
+      return res.status(400).json({ message: 'Санал хүлээгдэж байгаа төлөвт биш байна' });
     }
 
     // Update offer status
@@ -582,12 +582,12 @@ router.put('/:id/accept', auth, [
     }
 
     res.json({
-      message: 'Offer accepted successfully',
+      message: 'Санал амжилттай хүлээн авлаа',
       offer
     });
   } catch (error) {
     console.error('Accept offer error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -599,7 +599,7 @@ router.put('/:id/reject', auth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -613,17 +613,17 @@ router.put('/:id/reject', auth, [
       .populate('item', 'title');
 
     if (!offer) {
-      return res.status(404).json({ message: 'Offer not found' });
+      return res.status(404).json({ message: 'Санал олдсонгүй' });
     }
 
     // Check if user is the recipient of the offer
     if (offer.offeredTo._id.toString() !== req.user.userId) {
-      return res.status(403).json({ message: 'Not authorized to reject this offer' });
+      return res.status(403).json({ message: 'Энэ саналыг татгалзах эрхгүй' });
     }
 
     // Check if offer is still pending
     if (offer.status !== 'pending') {
-      return res.status(400).json({ message: 'Offer is no longer pending' });
+      return res.status(400).json({ message: 'Санал хүлээгдэж байгаа төлөвт биш байна' });
     }
 
     // Update offer status
@@ -647,12 +647,12 @@ router.put('/:id/reject', auth, [
     }
 
     res.json({
-      message: 'Offer rejected',
+      message: 'Санал татгалзагдлаа',
       offer
     });
   } catch (error) {
     console.error('Reject offer error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -663,18 +663,18 @@ router.put('/:id/complete', auth, async (req, res) => {
 
     const offer = await Offer.findById(id);
     if (!offer) {
-      return res.status(404).json({ message: 'Offer not found' });
+      return res.status(404).json({ message: 'Санал олдсонгүй' });
     }
 
     // Check if user is involved in the offer
     const userId = req.user.userId;
     if (offer.offeredBy.toString() !== userId && offer.offeredTo.toString() !== userId) {
-      return res.status(403).json({ message: 'Not authorized to complete this offer' });
+      return res.status(403).json({ message: 'Энэ саналыг дуусгах эрхгүй' });
     }
 
     // Check if offer is accepted
     if (offer.status !== 'accepted') {
-      return res.status(400).json({ message: 'Can only complete accepted offers' });
+      return res.status(400).json({ message: 'Зөвхөн зөвшөөрөгдсөн саналыг дуусгаж болно' });
     }
 
     offer.status = 'completed';
@@ -694,12 +694,12 @@ router.put('/:id/complete', auth, async (req, res) => {
     });
 
     res.json({
-      message: 'Trade completed successfully',
+      message: 'Арилжаа амжилттай дууслаа',
       offer
     });
   } catch (error) {
     console.error('Complete offer error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -714,7 +714,7 @@ router.get('/:id', auth, async (req, res) => {
       .populate('item', 'title description images location owner');
 
     if (!offer) {
-      return res.status(404).json({ message: 'Offer not found' });
+      return res.status(404).json({ message: 'Санал олдсонгүй' });
     }
 
     // Check if user is involved in the offer
@@ -722,13 +722,13 @@ router.get('/:id', auth, async (req, res) => {
     if (offer.offeredBy._id.toString() !== userId && 
         offer.offeredTo._id.toString() !== userId &&
         offer.item.owner.toString() !== userId) {
-      return res.status(403).json({ message: 'Not authorized to view this offer' });
+      return res.status(403).json({ message: 'Энэ саналыг харах эрхгүй' });
     }
 
     res.json(offer);
   } catch (error) {
     console.error('Get offer details error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -739,20 +739,20 @@ router.get('/:id/chat', auth, async (req, res) => {
     
     const offer = await Offer.findById(id);
     if (!offer) {
-      return res.status(404).json({ message: 'Offer not found' });
+      return res.status(404).json({ message: 'Санал олдсонгүй' });
     }
 
     // Check if user is involved in the offer
     const userId = req.user.userId;
     if (offer.offeredBy.toString() !== userId && offer.offeredTo.toString() !== userId) {
-      return res.status(403).json({ message: 'Not authorized to view this chat' });
+      return res.status(403).json({ message: 'Энэ чатад хандах эрхгүй' });
     }
 
     const chat = await Chat.findOne({ offer: id })
       .populate('messages.sender', 'name');
 
     if (!chat) {
-      return res.status(404).json({ message: 'Chat not found' });
+      return res.status(404).json({ message: 'Чат олдсонгүй' });
     }
 
     // Mark messages as read for current user
@@ -767,7 +767,7 @@ router.get('/:id/chat', auth, async (req, res) => {
     res.json(chat);
   } catch (error) {
     console.error('Get chat error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -779,7 +779,7 @@ router.post('/:id/chat', auth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -789,19 +789,19 @@ router.post('/:id/chat', auth, [
     
     const offer = await Offer.findById(id);
     if (!offer) {
-      return res.status(404).json({ message: 'Offer not found' });
+      return res.status(404).json({ message: 'Санал олдсонгүй' });
     }
 
     // Check if user is involved in the offer and offer is accepted
     const userId = req.user.userId;
     if ((offer.offeredBy.toString() !== userId && offer.offeredTo.toString() !== userId) ||
         offer.status !== 'accepted') {
-      return res.status(403).json({ message: 'Not authorized to send messages' });
+      return res.status(403).json({ message: 'Мессеж илгээх эрхгүй' });
     }
 
     let chat = await Chat.findOne({ offer: id });
     if (!chat) {
-      return res.status(404).json({ message: 'Chat not found' });
+      return res.status(404).json({ message: 'Чат олдсонгүй' });
     }
 
     const newMessage = {
@@ -816,12 +816,12 @@ router.post('/:id/chat', auth, [
     await chat.populate('messages.sender', 'name');
 
     res.status(201).json({
-      message: 'Message sent successfully',
+      message: 'Мессеж амжилттай илгээгдлээ',
       chatMessage: newMessage
     });
   } catch (error) {
     console.error('Send message error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 

@@ -67,7 +67,7 @@ const Signup = () => {
     setLoading(true);
     try {
       const signupData = {
-        username: formData.username,
+        name: formData.username,
         email: formData.email,
         password: formData.password,
         phone: formData.phone

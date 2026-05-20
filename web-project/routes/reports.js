@@ -41,7 +41,7 @@ const upload = multer({
     if (mimetype && extname) {
       return cb(null, true);
     } else {
-      cb(new Error('Only images, PDF, and text files are allowed'));
+      cb(new Error('Зөвхөн зураг, PDF, текст файл зөвшөөрнө'));
     }
   }
 });
@@ -70,7 +70,7 @@ router.post('/', auth, upload.array('evidence', 5), [
         req.files.forEach(file => fs.unlink(file.path, () => {}));
       }
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -95,7 +95,7 @@ router.post('/', auth, upload.array('evidence', 5), [
       if (req.files) {
         req.files.forEach(file => fs.unlink(file.path, () => {}));
       }
-      return res.status(404).json({ message: 'Reported target not found' });
+      return res.status(404).json({ message: 'Мэдээлсэн объект олдсонгүй' });
     }
 
     // Check if user already reported this target
@@ -111,7 +111,7 @@ router.post('/', auth, upload.array('evidence', 5), [
         req.files.forEach(file => fs.unlink(file.path, () => {}));
       }
       return res.status(400).json({ 
-        message: 'You have already reported this item. Please wait for review.' 
+        message: 'Та энэ зүйлийг өмнө нь мэдээлсэн байна. Шалгагдахыг хүлээнэ үү.' 
       });
     }
 
@@ -168,7 +168,7 @@ router.post('/', auth, upload.array('evidence', 5), [
     }
 
     res.status(201).json({
-      message: 'Report submitted successfully. We will review it within 24-48 hours.',
+      message: 'Гомдол амжилттай илгээгдлээ. 24-48 цагийн дотор шалгана.',
       reportId: report._id
     });
   } catch (error) {
@@ -177,7 +177,7 @@ router.post('/', auth, upload.array('evidence', 5), [
     if (req.files) {
       req.files.forEach(file => fs.unlink(file.path, () => {}));
     }
-    res.status(500).json({ message: 'Server error during report submission' });
+    res.status(500).json({ message: 'Гомдол илгээх үед серверийн алдаа гарлаа', details: error.message });
   }
 });
 
@@ -191,7 +191,7 @@ router.get('/my-reports', auth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Invalid query parameters', 
+        message: 'Хүсэлтийн параметр буруу байна', 
         errors: errors.array() 
       });
     }
@@ -226,7 +226,7 @@ router.get('/my-reports', auth, [
     });
   } catch (error) {
     console.error('Get user reports error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -240,18 +240,18 @@ router.get('/:id', auth, async (req, res) => {
       .populate('resolvedBy', 'name');
 
     if (!report) {
-      return res.status(404).json({ message: 'Report not found' });
+      return res.status(404).json({ message: 'Гомдол олдсонгүй' });
     }
 
     // Check if user owns this report or is admin
     if (report.reportedBy._id.toString() !== req.user.userId && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Not authorized to view this report' });
+      return res.status(403).json({ message: 'Энэ гомдлыг харах эрхгүй' });
     }
 
     res.json(report);
   } catch (error) {
     console.error('Get report error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -275,7 +275,7 @@ router.get('/admin/all', auth, adminAuth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Invalid query parameters', 
+        message: 'Хүсэлтийн параметр буруу байна', 
         errors: errors.array() 
       });
     }
@@ -327,7 +327,7 @@ router.get('/admin/all', auth, adminAuth, [
     });
   } catch (error) {
     console.error('Get admin reports error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -348,7 +348,7 @@ router.patch('/admin/:id', auth, adminAuth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -361,7 +361,7 @@ router.patch('/admin/:id', auth, adminAuth, [
       .populate('targetId');
 
     if (!report) {
-      return res.status(404).json({ message: 'Report not found' });
+      return res.status(404).json({ message: 'Гомдол олдсонгүй' });
     }
 
     // Update report
@@ -453,12 +453,12 @@ router.patch('/admin/:id', auth, adminAuth, [
     await report.populate('resolvedBy', 'name');
 
     res.json({
-      message: 'Report updated successfully',
+      message: 'Гомдол амжилттай шинэчлэгдлээ',
       report
     });
   } catch (error) {
     console.error('Update report error:', error);
-    res.status(500).json({ message: 'Server error during report update' });
+    res.status(500).json({ message: 'Гомдол шинэчлэх үед серверийн алдаа гарлаа', details: error.message });
   }
 });
 
@@ -528,7 +528,7 @@ router.get('/admin/statistics', auth, adminAuth, async (req, res) => {
     });
   } catch (error) {
     console.error('Get report statistics error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 

@@ -36,12 +36,6 @@ const userSchema = new mongoose.Schema({
       lng: Number
     }
   },
-  isEmailVerified: {
-    type: Boolean,
-    default: false
-  },
-  emailVerificationToken: String,
-  emailVerificationExpires: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
   role: {

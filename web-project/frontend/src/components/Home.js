@@ -20,7 +20,8 @@ const Home = () => {
       const data = await itemService.getAllItems({
         page,
         sort,
-        limit: 16
+        limit: 16,
+        status: 'active'
       });
       setItems(data.items || []);
       setPagination(data.pagination);
@@ -36,7 +37,10 @@ const Home = () => {
   const handleSearch = async (searchParams) => {
     try {
       setLoading(true);
-      const data = await itemService.searchItems(searchParams);
+      const data = await itemService.searchItems({
+        ...searchParams,
+        status: 'active'
+      });
       setItems(data.items || []);
       setPagination(data.pagination);
       

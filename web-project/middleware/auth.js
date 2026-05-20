@@ -6,7 +6,7 @@ const auth = async (req, res, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
     if (!token) {
-      return res.status(401).json({ message: 'No token, authorization denied' });
+      return res.status(401).json({ message: 'Токен байхгүй, эрхгүй' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -14,12 +14,12 @@ const auth = async (req, res, next) => {
     // Get user from token
     const user = await User.findById(decoded.userId).select('-password');
     if (!user) {
-      return res.status(401).json({ message: 'Token is not valid' });
+      return res.status(401).json({ message: 'Токен хүчингүй' });
     }
 
     // Check if user is active
     if (user.status !== 'active') {
-      return res.status(403).json({ message: 'Account is suspended or banned' });
+      return res.status(403).json({ message: 'Данс түр эсвэл бүрмөсөн хаалттай' });
     }
 
     req.user = decoded;
@@ -27,14 +27,14 @@ const auth = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);
-    res.status(401).json({ message: 'Token is not valid' });
+    res.status(401).json({ message: 'Токен хүчингүй', details: error.message });
   }
 };
 
 // Admin only middleware
 const adminAuth = (req, res, next) => {
   if (req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Admin access required' });
+    return res.status(403).json({ message: 'Админы эрх шаардлагатай' });
   }
   next();
 };

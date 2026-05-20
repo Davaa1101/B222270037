@@ -10,6 +10,8 @@ const Chat = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const messagesEndRef = useRef(null);
+  const isFetchingRef = useRef(false);
+  const pollingRef = useRef(null);
   
   const [offer, setOffer] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -23,11 +25,18 @@ const Chat = () => {
       navigate('/login');
       return;
     }
+
     loadOfferAndMessages();
-    
-    // Poll for new messages every 5 seconds
-    const interval = setInterval(loadMessages, 5000);
-    return () => clearInterval(interval);
+
+    pollingRef.current = setInterval(() => {
+      loadMessages({ silent: true });
+    }, 2500);
+
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+      }
+    };
   }, [offerId, isAuthenticated]);
 
   useEffect(() => {
@@ -45,7 +54,7 @@ const Chat = () => {
       // Load offer details
       const offerData = await offerService.getOffer(offerId);
       
-      if (offerData.status !== 'accepted') {
+      if (offerData.status !== 'accepted' && offerData.status !== 'completed') {
         setAlert({ message: 'Зөвхөн зөвшөөрөгдсөн санал дээр чат хийх боломжтой', type: 'warning' });
         setTimeout(() => navigate('/offers'), 2000);
         return;
@@ -63,12 +72,41 @@ const Chat = () => {
     }
   };
 
-  const loadMessages = async () => {
+  const normalizeMessage = (msg) => ({
+    id: msg._id || msg.id,
+    senderId: msg.sender?._id || msg.sender,
+    senderName: msg.sender?.name || msg.senderName || '',
+    content: msg.content || msg.message || '',
+    timestamp: msg.timestamp || msg.createdAt || msg.sentAt
+  });
+
+  const areMessagesSame = (prevMessages, nextMessages) => {
+    if (prevMessages.length !== nextMessages.length) return false;
+    const prevLast = prevMessages[prevMessages.length - 1];
+    const nextLast = nextMessages[nextMessages.length - 1];
+    if (!prevLast && !nextLast) return true;
+    if (!prevLast || !nextLast) return false;
+    return (
+      prevLast.senderId === nextLast.senderId &&
+      prevLast.content === nextLast.content &&
+      String(prevLast.timestamp) === String(nextLast.timestamp)
+    );
+  };
+
+  const loadMessages = async ({ silent = false } = {}) => {
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
     try {
       const data = await chatService.getMessages(offerId);
-      setMessages(data);
+      const normalized = Array.isArray(data) ? data.map(normalizeMessage) : [];
+      setMessages((prev) => (areMessagesSame(prev, normalized) ? prev : normalized));
+      await chatService.markAsRead(offerId);
     } catch (error) {
-      console.error('Error loading messages:', error);
+      if (!silent) {
+        console.error('Error loading messages:', error);
+      }
+    } finally {
+      isFetchingRef.current = false;
     }
   };
 
@@ -79,13 +117,24 @@ const Chat = () => {
     
     setSending(true);
     try {
+      const optimisticMessage = {
+        id: `temp-${Date.now()}`,
+        senderId: user.id || user._id,
+        senderName: user.name || '',
+        content: newMessage,
+        timestamp: new Date().toISOString()
+      };
+
+      setMessages((prev) => [...prev, optimisticMessage]);
+
       await chatService.sendMessage(offerId, newMessage);
-      
+
       setNewMessage('');
-      await loadMessages();
+      await loadMessages({ silent: true });
     } catch (error) {
       console.error('Error sending message:', error);
       setAlert({ message: 'Мессеж илгээхэд алдаа гарлаа', type: 'error' });
+      await loadMessages({ silent: true });
     } finally {
       setSending(false);
     }
@@ -175,15 +224,15 @@ const Chat = () => {
             </div>
           ) : (
             messages.map((msg, index) => {
-              const isMyMessage = msg.sender._id === (user.id || user._id);
+              const isMyMessage = msg.senderId === (user.id || user._id);
               return (
                 <div
-                  key={msg._id || index}
+                  key={msg.id || index}
                   className={`d-flex mb-3 ${isMyMessage ? 'justify-content-end' : 'justify-content-start'}`}
                 >
                   <div style={{ maxWidth: '70%' }}>
                     {!isMyMessage && (
-                      <small className="text-muted d-block mb-1">{msg.sender.name}</small>
+                      <small className="text-muted d-block mb-1">{msg.senderName}</small>
                     )}
                     <div
                       className={`p-3 rounded ${isMyMessage ? 'bg-primary text-white' : 'bg-light'}`}
@@ -191,9 +240,9 @@ const Chat = () => {
                         borderRadius: isMyMessage ? '20px 20px 5px 20px' : '20px 20px 20px 5px'
                       }}
                     >
-                      <p className="mb-0" style={{ whiteSpace: 'pre-line' }}>{msg.message}</p>
+                      <p className="mb-0" style={{ whiteSpace: 'pre-line' }}>{msg.content}</p>
                       <small className={`d-block mt-2 ${isMyMessage ? 'text-white-50' : 'text-muted'}`}>
-                        {new Date(msg.createdAt).toLocaleTimeString('mn-MN', {
+                        {new Date(msg.timestamp).toLocaleTimeString('mn-MN', {
                           hour: '2-digit',
                           minute: '2-digit'
                         })}

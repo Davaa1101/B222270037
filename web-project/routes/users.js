@@ -39,7 +39,7 @@ const upload = multer({
     if (mimetype && extname) {
       return cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed'));
+      cb(new Error('Зөвхөн зургийн файл зөвшөөрнө'));
     }
   }
 });
@@ -49,13 +49,13 @@ router.get('/profile', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId).select('-password');
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'Хэрэглэгч олдсонгүй' });
     }
 
     res.json(user);
   } catch (error) {
     console.error('Get profile error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -76,7 +76,7 @@ router.put('/profile', auth, upload.single('avatar'), [
         fs.unlink(req.file.path, () => {});
       }
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -86,7 +86,7 @@ router.put('/profile', auth, upload.single('avatar'), [
       if (req.file) {
         fs.unlink(req.file.path, () => {});
       }
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'Хэрэглэгч олдсонгүй' });
     }
 
     // Update basic fields
@@ -131,7 +131,7 @@ router.put('/profile', auth, upload.single('avatar'), [
     const updatedUser = await User.findById(req.user.userId).select('-password');
     
     res.json({
-      message: 'Profile updated successfully',
+      message: 'Профайл амжилттай шинэчлэгдлээ',
       user: updatedUser
     });
   } catch (error) {
@@ -140,7 +140,7 @@ router.put('/profile', auth, upload.single('avatar'), [
     if (req.file) {
       fs.unlink(req.file.path, () => {});
     }
-    res.status(500).json({ message: 'Server error during profile update' });
+    res.status(500).json({ message: 'Профайл шинэчлэх үед серверийн алдаа гарлаа', details: error.message });
   }
 });
 
@@ -154,7 +154,7 @@ router.get('/items', auth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Invalid query parameters', 
+        message: 'Хүсэлтийн параметр буруу байна', 
         errors: errors.array() 
       });
     }
@@ -201,7 +201,7 @@ router.get('/items', auth, [
     });
   } catch (error) {
     console.error('Get user items error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -214,7 +214,7 @@ router.get('/favorites', auth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Invalid query parameters', 
+        message: 'Хүсэлтийн параметр буруу байна', 
         errors: errors.array() 
       });
     }
@@ -249,7 +249,7 @@ router.get('/favorites', auth, [
     });
   } catch (error) {
     console.error('Get favorites error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -322,7 +322,7 @@ router.get('/dashboard', auth, async (req, res) => {
     });
   } catch (error) {
     console.error('Get dashboard error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -332,7 +332,7 @@ router.post('/change-password', auth, [
   body('newPassword').isLength({ min: 6 }),
   body('confirmPassword').custom((value, { req }) => {
     if (value !== req.body.newPassword) {
-      throw new Error('Password confirmation does not match password');
+      throw new Error('Нууц үгийн баталгаажуулалт таарахгүй байна');
     }
     return true;
   })
@@ -341,7 +341,7 @@ router.post('/change-password', auth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -350,23 +350,23 @@ router.post('/change-password', auth, [
 
     const user = await User.findById(req.user.userId);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'Хэрэглэгч олдсонгүй' });
     }
 
     // Check current password
     const isMatch = await user.comparePassword(currentPassword);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Current password is incorrect' });
+      return res.status(400).json({ message: 'Одоогийн нууц үг буруу байна' });
     }
 
     // Update password
     user.password = newPassword;
     await user.save();
 
-    res.json({ message: 'Password changed successfully' });
+    res.json({ message: 'Нууц үг амжилттай солигдлоо' });
   } catch (error) {
     console.error('Change password error:', error);
-    res.status(500).json({ message: 'Server error during password change' });
+    res.status(500).json({ message: 'Нууц үг солих үед серверийн алдаа гарлаа', details: error.message });
   }
 });
 
@@ -379,7 +379,7 @@ router.delete('/account', auth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -389,13 +389,13 @@ router.delete('/account', auth, [
 
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'Хэрэглэгч олдсонгүй' });
     }
 
     // Verify password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Password is incorrect' });
+      return res.status(400).json({ message: 'Нууц үг буруу байна' });
     }
 
     // Delete user's items and their images
@@ -433,10 +433,10 @@ router.delete('/account', auth, [
     // Delete user account
     await User.findByIdAndDelete(userId);
 
-    res.json({ message: 'Account deleted successfully' });
+    res.json({ message: 'Данс амжилттай устгагдлаа' });
   } catch (error) {
     console.error('Delete account error:', error);
-    res.status(500).json({ message: 'Server error during account deletion' });
+    res.status(500).json({ message: 'Данс устгах үед серверийн алдаа гарлаа', details: error.message });
   }
 });
 
@@ -450,7 +450,7 @@ router.get('/:id/public', async (req, res) => {
       .lean();
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'Хэрэглэгч олдсонгүй' });
     }
 
     // Get user's active items count
@@ -465,7 +465,7 @@ router.get('/:id/public', async (req, res) => {
     });
   } catch (error) {
     console.error('Get public profile error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -478,7 +478,7 @@ router.get('/:id/items', [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Invalid query parameters', 
+        message: 'Хүсэлтийн параметр буруу байна', 
         errors: errors.array() 
       });
     }
@@ -514,7 +514,7 @@ router.get('/:id/items', [
     });
   } catch (error) {
     console.error('Get user public items error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 

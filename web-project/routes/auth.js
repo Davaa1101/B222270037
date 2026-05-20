@@ -18,7 +18,7 @@ router.post('/register', [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -61,7 +61,6 @@ router.post('/register', [
       phone: user.phone,
       location: user.location,
       bio: user.bio,
-      isEmailVerified: user.isEmailVerified,
       profilePicture: user.profilePicture,
       rating: user.rating,
       createdAt: user.createdAt
@@ -77,39 +76,14 @@ router.post('/register', [
     console.error('Error details:', error.message);
     if (error.name === 'ValidationError') {
       return res.status(400).json({ 
-        message: 'Validation error', 
+        message: 'Шалгалтын алдаа', 
         details: error.message 
       });
     }
-    res.status(500).json({ message: 'Server error during registration' });
+    res.status(500).json({ message: 'Бүртгэл хийх үед серверийн алдаа гарлаа', details: error.message });
   }
 });
 
-// Verify email
-router.get('/verify-email/:token', async (req, res) => {
-  try {
-    const { token } = req.params;
-
-    const user = await User.findOne({
-      emailVerificationToken: token,
-      emailVerificationExpires: { $gt: Date.now() }
-    });
-
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid or expired verification token' });
-    }
-
-    user.isEmailVerified = true;
-    user.emailVerificationToken = undefined;
-    user.emailVerificationExpires = undefined;
-    await user.save();
-
-    res.json({ message: 'Email verified successfully. You can now log in.' });
-  } catch (error) {
-    console.error('Email verification error:', error);
-    res.status(500).json({ message: 'Server error during email verification' });
-  }
-});
 
 // Login
 router.post('/login', [
@@ -120,7 +94,7 @@ router.post('/login', [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -130,21 +104,21 @@ router.post('/login', [
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ message: 'Нэвтрэх мэдээлэл буруу' });
     }
 
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ message: 'Нэвтрэх мэдээлэл буруу' });
     }
 
     // Check if user is banned or suspended
     if (user.status === 'banned') {
-      return res.status(403).json({ message: 'Your account has been banned' });
+      return res.status(403).json({ message: 'Таны данс бүрмөсөн хаалттай' });
     }
     if (user.status === 'suspended') {
-      return res.status(403).json({ message: 'Your account is temporarily suspended' });
+      return res.status(403).json({ message: 'Таны данс түр хугацаагаар хаалттай' });
     }
 
     // Generate JWT token
@@ -167,7 +141,7 @@ router.post('/login', [
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error during login' });
+    res.status(500).json({ message: 'Нэвтрэх үед серверийн алдаа гарлаа', details: error.message });
   }
 });
 
@@ -183,7 +157,7 @@ router.post('/logout', auth, async (req, res) => {
     });
   } catch (error) {
     console.error('Logout error:', error);
-    res.status(500).json({ message: 'Server error during logout' });
+    res.status(500).json({ message: 'Гарах үед серверийн алдаа гарлаа', details: error.message });
   }
 });
 
@@ -195,7 +169,7 @@ router.post('/forgot-password', [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Please provide a valid email address' 
+        message: 'Зөв и-мэйл хаяг оруулна уу' 
       });
     }
 
@@ -222,7 +196,7 @@ router.post('/forgot-password', [
     res.json({ message: 'If an account with that email exists, we sent a password reset link.' });
   } catch (error) {
     console.error('Forgot password error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -234,7 +208,7 @@ router.post('/reset-password/:token', [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Password must be at least 6 characters long' 
+        message: 'Нууц үг хамгийн багадаа 6 тэмдэгттэй байх ёстой' 
       });
     }
 
@@ -247,7 +221,7 @@ router.post('/reset-password/:token', [
     });
 
     if (!user) {
-      return res.status(400).json({ message: 'Invalid or expired reset token' });
+      return res.status(400).json({ message: 'Сэргээх токен буруу эсвэл хугацаа нь дууссан' });
     }
 
     user.password = password;
@@ -258,7 +232,7 @@ router.post('/reset-password/:token', [
     res.json({ message: 'Password reset successfully' });
   } catch (error) {
     console.error('Reset password error:', error);
-    res.status(500).json({ message: 'Server error during password reset' });
+    res.status(500).json({ message: 'Нууц үг сэргээх үед серверийн алдаа гарлаа', details: error.message });
   }
 });
 
@@ -267,49 +241,15 @@ router.get('/me', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId).select('-password');
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'Хэрэглэгч олдсонгүй' });
     }
 
     res.json(user);
   } catch (error) {
     console.error('Get user error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
-// Resend verification email
-router.post('/resend-verification', [
-  body('email').isEmail().normalizeEmail()
-], async (req, res) => {
-  try {
-    const { email } = req.body;
-    
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    if (user.isEmailVerified) {
-      return res.status(400).json({ message: 'Email is already verified' });
-    }
-
-    // Generate new verification token
-    const emailVerificationToken = crypto.randomBytes(32).toString('hex');
-    const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-    user.emailVerificationToken = emailVerificationToken;
-    user.emailVerificationExpires = emailVerificationExpires;
-    await user.save();
-
-    // Send verification email
-    const verificationUrl = `${process.env.BASE_URL}/api/auth/verify-email/${emailVerificationToken}`;
-    await sendVerificationEmail(email, user.name, verificationUrl);
-
-    res.json({ message: 'Verification email sent' });
-  } catch (error) {
-    console.error('Resend verification error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
 
 module.exports = router;

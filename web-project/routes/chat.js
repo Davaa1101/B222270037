@@ -13,18 +13,18 @@ router.get('/:offerId', auth, async (req, res) => {
     
     const offer = await Offer.findById(offerId);
     if (!offer) {
-      return res.status(404).json({ message: 'Offer not found' });
+      return res.status(404).json({ message: 'Санал олдсонгүй' });
     }
 
     // Check if user is involved in the offer
     const userId = req.user.userId;
     if (offer.offeredBy.toString() !== userId && offer.offeredTo.toString() !== userId) {
-      return res.status(403).json({ message: 'Not authorized to view this chat' });
+      return res.status(403).json({ message: 'Энэ чатад хандах эрхгүй' });
     }
 
     // Check if offer is accepted
     if (offer.status !== 'accepted' && offer.status !== 'completed') {
-      return res.status(400).json({ message: 'Chat only available for accepted offers' });
+      return res.status(400).json({ message: 'Чат зөвхөн зөвшөөрөгдсөн саналд нээгдэнэ' });
     }
 
     let chat = await Chat.findOne({ offer: offerId })
@@ -60,7 +60,7 @@ router.get('/:offerId', auth, async (req, res) => {
     res.json(chat.messages);
   } catch (error) {
     console.error('Get chat error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -72,7 +72,7 @@ router.post('/:offerId', auth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
-        message: 'Validation failed', 
+        message: 'Шалгалт амжилтгүй', 
         errors: errors.array() 
       });
     }
@@ -85,14 +85,14 @@ router.post('/:offerId', auth, [
       .populate('offeredTo', 'name email');
     
     if (!offer) {
-      return res.status(404).json({ message: 'Offer not found' });
+      return res.status(404).json({ message: 'Санал олдсонгүй' });
     }
 
     // Check if user is involved in the offer and offer is accepted
     const userId = req.user.userId;
     if ((offer.offeredBy._id.toString() !== userId && offer.offeredTo._id.toString() !== userId) ||
         (offer.status !== 'accepted' && offer.status !== 'completed')) {
-      return res.status(403).json({ message: 'Not authorized to send messages' });
+      return res.status(403).json({ message: 'Мессеж илгээх эрхгүй' });
     }
 
     let chat = await Chat.findOne({ offer: offerId });
@@ -138,12 +138,12 @@ router.post('/:offerId', auth, [
     const lastMessage = chat.messages[chat.messages.length - 1];
     
     res.status(201).json({
-      message: 'Message sent successfully',
+      message: 'Мессеж амжилттай илгээгдлээ',
       chatMessage: lastMessage
     });
   } catch (error) {
     console.error('Send message error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -169,7 +169,7 @@ router.get('/unread/count', auth, async (req, res) => {
     res.json({ unreadCount });
   } catch (error) {
     console.error('Get unread count error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
@@ -182,12 +182,12 @@ router.put('/:offerId/mark-read', auth, async (req, res) => {
     const chat = await Chat.findOne({ offer: offerId });
     
     if (!chat) {
-      return res.status(404).json({ message: 'Chat not found' });
+      return res.status(404).json({ message: 'Чат олдсонгүй' });
     }
 
     // Check if user is a participant
     if (!chat.participants.some(p => p.toString() === userId)) {
-      return res.status(403).json({ message: 'Not authorized' });
+      return res.status(403).json({ message: 'Эрхгүй' });
     }
 
     // Mark all messages from other users as read
@@ -203,10 +203,10 @@ router.put('/:offerId/mark-read', auth, async (req, res) => {
       await chat.save();
     }
 
-    res.json({ message: 'Messages marked as read' });
+    res.json({ message: 'Мессежүүд уншсан гэж тэмдэглэгдлээ' });
   } catch (error) {
     console.error('Mark read error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Серверийн алдаа', details: error.message });
   }
 });
 
