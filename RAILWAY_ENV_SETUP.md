@@ -8,8 +8,6 @@ MONGODB_URI=mongodb+srv://Davaa:fJD7O91OlRiRZOWw@cluster0.x6zwbmy.mongodb.net/ba
 JWT_SECRET=ae1c5bd0e9aaa15a345baff0318123da6e3567c2bdb5a8e222b17249c5f9471992833a1acfea984fb0eaf701c06f2a5c10d61d1c846b8b74bf08a8e6e6c5a175
 JWT_EXPIRES_IN=7d
 FRONTEND_URL=https://cs-316.vercel.app
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
 UPLOAD_PATH=./uploads
 MAX_FILE_SIZE=5242880
 ```

@@ -3,16 +3,21 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
-const { sendPasswordResetEmail } = require('../utils/email');
+const Notification = require('../models/Notification');
 const { auth } = require('../middleware/auth');
 
 const router = express.Router();
+
+const createNotification = async ({ user, type, title, message, link = '' }) => {
+  return Notification.create({ user, type, title, message, link });
+};
 
 // Register user
 router.post('/register', [
   body('email').isEmail().normalizeEmail(),
   body('password').isLength({ min: 6 }),
-  body('name').trim().isLength({ min: 1 })
+  body('name').trim().isLength({ min: 1 }),
+  body('phone').trim().isLength({ min: 8 }).withMessage('Утасны дугаар хүүхэлттэй байх ёстой')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -23,12 +28,18 @@ router.post('/register', [
       });
     }
 
-    const { email, password, name, phone = '00000000', location } = req.body;
+    const { email, password, name, phone, location } = req.body;
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    // Check if user already exists by email
+    const existingUserEmail = await User.findOne({ email });
+    if (existingUserEmail) {
       return res.status(400).json({ message: 'Энэ и-мэйл хаягаар аль хэдийн бүртгэгдсэн байна' });
+    }
+
+    // Check if phone number already exists
+    const existingUserPhone = await User.findOne({ phone });
+    if (existingUserPhone) {
+      return res.status(400).json({ message: 'Энэ утасны дугаараар аль хэдийн бүртгэгдсэн байна' });
     }
 
     // Create user - no email verification needed
@@ -36,7 +47,7 @@ router.post('/register', [
       email,
       password,
       name,
-      phone: phone || '00000000',
+      phone,
       location: location || {
         city: 'Улаанбаатар',
         district: 'Unknown'
@@ -74,6 +85,12 @@ router.post('/register', [
   } catch (error) {
     console.error('Registration error:', error);
     console.error('Error details:', error.message);
+    // Handle duplicate phone number error from MongoDB
+    if (error.code === 11000 && error.keyPattern.phone) {
+      return res.status(400).json({ 
+        message: 'Энэ утасны дугаараар аль хэдийн бүртгэгдсэн байна' 
+      });
+    }
     if (error.name === 'ValidationError') {
       return res.status(400).json({ 
         message: 'Шалгалтын алдаа', 
@@ -189,11 +206,19 @@ router.post('/forgot-password', [
     user.passwordResetExpires = resetExpires;
     await user.save();
 
-    // Send reset email
     const resetUrl = `${process.env.BASE_URL}/reset-password/${resetToken}`;
-    await sendPasswordResetEmail(email, user.name, resetUrl);
+    await createNotification({
+      user: user._id,
+      type: 'password_reset',
+      title: 'Нууц үг сэргээх хүсэлт',
+      message: 'Таны нууц үг сэргээх хүсэлт бүртгэгдлээ. Дэлгэрэнгүйг нээгээд шинэ нууц үг тохируулна уу.',
+      link: resetUrl
+    });
 
-    res.json({ message: 'If an account with that email exists, we sent a password reset link.' });
+    res.json({
+      message: 'Хэрэв тухайн и-мэйлтэй бүртгэл байвал нууц үг сэргээх мэдэгдэл илгээгдлээ.',
+      resetUrl
+    });
   } catch (error) {
     console.error('Forgot password error:', error);
     res.status(500).json({ message: 'Серверийн алдаа', details: error.message });

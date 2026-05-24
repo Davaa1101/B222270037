@@ -248,30 +248,6 @@ jobs:
     if: always()
     
     steps:
-      - name: 📧 Send email notification
-        uses: dawidd6/action-send-mail@v3
-        if: failure()
-        with:
-          server_address: ${{ secrets.MAIL_SERVER }}
-          server_port: ${{ secrets.MAIL_PORT }}
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "❌ CI Pipeline Failed - ${{ github.repository }}"
-          to: ${{ secrets.NOTIFICATION_EMAIL }}
-          from: "GitHub Actions <noreply@github.com>"
-          body: |
-            CI Pipeline алдаа гарлаа!
-            
-            Repository: ${{ github.repository }}
-            Branch: ${{ github.ref_name }}
-            Commit: ${{ github.sha }}
-            Author: ${{ github.actor }}
-            
-            Workflow: ${{ github.workflow }}
-            Run: ${{ github.run_number }}
-            
-            Дэлгэрэнгүй: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
       - name: 💬 Send Slack notification
         uses: slackapi/slack-github-action@v1
         if: failure()

@@ -2,9 +2,14 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { Chat } = require('../models/index');
 const Offer = require('../models/Offer');
+const Notification = require('../models/Notification');
 const { auth } = require('../middleware/auth');
 
 const router = express.Router();
+
+const createNotification = async ({ user, type, title, message, link = '', offer }) => {
+  return Notification.create({ user, type, title, message, link, offer });
+};
 
 // Get chat messages for an offer
 router.get('/:offerId', auth, async (req, res) => {
@@ -119,19 +124,19 @@ router.post('/:offerId', auth, [
     // Populate sender info for the response
     await chat.populate('messages.sender', 'name');
 
-    // Send email notification to the other participant
+    // Create in-app notification for the other participant
     try {
       const otherUser = offer.offeredBy._id.toString() === userId ? offer.offeredTo : offer.offeredBy;
-      const { sendNotificationEmail } = require('../utils/email');
-      
-      await sendNotificationEmail(
-        otherUser.email,
-        otherUser.name,
-        'Шинэ мессеж ирлээ',
-        `Танд шинэ мессеж ирлээ солилцооны чатанд.\n\nМессеж: ${message.substring(0, 100)}${message.length > 100 ? '...' : ''}`
-      );
-    } catch (emailError) {
-      console.error('Failed to send message notification:', emailError);
+      await createNotification({
+        user: otherUser._id,
+        type: 'new_message',
+        title: 'Шинэ мессеж ирлээ',
+        message: `Танд шинэ мессеж ирлээ солилцооны чатанд.\n\nМессеж: ${message.substring(0, 100)}${message.length > 100 ? '...' : ''}`,
+        link: `/chat/${offerId}`,
+        offer: offer._id
+      });
+    } catch (notificationError) {
+      console.error('Failed to create message notification:', notificationError);
     }
 
     // Return the last message

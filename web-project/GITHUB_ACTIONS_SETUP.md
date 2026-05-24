@@ -23,42 +23,7 @@ Name: JWT_SECRET
 Value: your-very-secret-jwt-key-min-32-characters-long
 ```
 
-#### Б. И-мэйл мэдэгдэл (Optional, гэхдээ санал болгож байна)
-
-**Gmail ашиглах бол:**
-
-1. Gmail Account → Google Account → Security
-2. "2-Step Verification" идэвхжүүлэх
-3. "App passwords" хайх
-4. "Mail" сонгож password үүсгэх
-5. Үүссэн 16 оронтой passwordоо хуулах
-
-```
-Name: MAIL_SERVER
-Value: smtp.gmail.com
-```
-
-```
-Name: MAIL_PORT
-Value: 587
-```
-
-```
-Name: MAIL_USERNAME
-Value: your-email@gmail.com
-```
-
-```
-Name: MAIL_PASSWORD
-Value: abcd efgh ijkl mnop (Google app password)
-```
-
-```
-Name: NOTIFICATION_EMAIL
-Value: team-email@gmail.com
-```
-
-#### В. Slack мэдэгдэл (Optional)
+#### Б. Slack мэдэгдэл (Optional)
 
 Slack Workspace байгаа бол:
 

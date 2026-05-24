@@ -33,7 +33,6 @@
 - **Backend**: Node.js, Express.js
 - **Database**: MongoDB, Mongoose
 - **Authentication**: JWT, bcrypt
-- **Email**: Nodemailer
 - **File Upload**: Multer
 - **Frontend**: HTML, CSS, JavaScript, Bootstrap
 - **Security**: Helmet, CORS, Rate Limiting
@@ -60,7 +59,6 @@ cp .env.example .env
 3. `.env` файлыг тохируулах:
 - MongoDB холболтын string
 - JWT secret key
-- Email тохиргоо (Gmail SMTP)
 - Бусад тохиргоо
 
 4. MongoDB эхлүүлэх:
@@ -88,7 +86,6 @@ npm start
 ### Authentication
 - `POST /api/auth/register` - Бүртгүүлэх
 - `POST /api/auth/login` - Нэвтрэх
-- `GET /api/auth/verify-email/:token` - Email баталгаажуулах
 - `POST /api/auth/forgot-password` - Нууц үг сэргээх
 - `POST /api/auth/reset-password/:token` - Нууц үг шинэчлэх
 

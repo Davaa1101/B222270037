@@ -105,7 +105,12 @@ const MakeOffer = () => {
       setTimeout(() => navigate(`/item/${itemId}`), 2000);
     } catch (error) {
       console.error('Error creating offer:', error);
-      setAlert({ message: 'Санал илгээхэд алдаа гарлаа', type: 'error' });
+      const apiMessage = error.response?.data?.message;
+      const apiDetails = error.response?.data?.details;
+      setAlert({
+        message: apiMessage || apiDetails || 'Санал илгээхэд алдаа гарлаа',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }

@@ -16,6 +16,7 @@ const itemRoutes = require('./routes/items');
 const offerRoutes = require('./routes/offers');
 const chatRoutes = require('./routes/chat');
 const userRoutes = require('./routes/users');
+const notificationRoutes = require('./routes/notifications');
 const reportRoutes = require('./routes/reports');
 const adminRoutes = require('./routes/admin');
 
@@ -71,8 +72,11 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Static files
 app.use('/uploads', express.static('uploads'));
 
-// Serve React build files
-app.use(express.static('./frontend/build'));
+// Serve React build files only when the frontend has been built
+const frontendBuildPath = path.join(__dirname, 'frontend', 'build');
+if (fs.existsSync(frontendBuildPath)) {
+  app.use(express.static(frontendBuildPath));
+}
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/barter-platform')
@@ -95,13 +99,16 @@ app.use('/api/items', itemRoutes);
 app.use('/api/offers', offerRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/notifications', notificationRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Catch all handler: send back React's index.html file for client-side routing
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, './frontend/build', 'index.html'));
-});
+// Catch all handler only when the frontend build exists
+if (fs.existsSync(frontendBuildPath)) {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(frontendBuildPath, 'index.html'));
+  });
+}
 
 // Error handling middleware
 app.use((error, req, res, next) => {

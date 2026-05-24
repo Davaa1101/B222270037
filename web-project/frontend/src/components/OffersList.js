@@ -99,6 +99,58 @@ const OffersList = () => {
     return null;
   };
 
+  const truncateText = (text, maxLength = 140) => {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return `${text.slice(0, maxLength)}...`;
+  };
+
+  const getConditionLabel = (condition) => {
+    switch (condition) {
+      case 'new':
+        return 'Шинэ';
+      case 'like_new':
+        return 'Шинэ шиг';
+      case 'good':
+        return 'Сайн';
+      case 'fair':
+        return 'Дунд';
+      case 'poor':
+        return 'Муу';
+      default:
+        return condition || 'Тодорхойгүй';
+    }
+  };
+
+  const renderPrimaryImage = (images, title) => {
+    const image = images?.[0];
+    const imageUrl = image ? getImageUrl(image) : null;
+
+    if (!imageUrl) {
+      return (
+        <div
+          className="d-flex align-items-center justify-content-center bg-light"
+          style={{ width: '88px', height: '88px', borderRadius: '14px' }}
+        >
+          <i className="fas fa-image text-muted fa-lg"></i>
+        </div>
+      );
+    }
+
+    return (
+      <img
+        src={imageUrl}
+        alt={title}
+        style={{
+          width: '88px',
+          height: '88px',
+          objectFit: 'cover',
+          borderRadius: '14px'
+        }}
+      />
+    );
+  };
+
   if (loading) {
     return (
       <div className="container py-5 text-center">
@@ -170,88 +222,139 @@ const OffersList = () => {
             <div className="row g-3">
               {offers.map(offer => (
                 <div key={offer._id} className="col-12">
-                  <div className="card border" style={{ borderRadius: '15px' }}>
-                    <div className="card-body p-3">
-                      <div className="row align-items-center">
-                        {/* Item Info */}
-                        <div className="col-md-3">
-                          <div className="d-flex align-items-center">
-                            {offer.item?.images?.[0] && (
-                              <img
-                                src={getImageUrl(offer.item.images[0])}
-                                alt={offer.item.title}
-                                style={{
-                                  width: '80px',
-                                  height: '80px',
-                                  objectFit: 'cover',
-                                  borderRadius: '10px',
-                                  marginRight: '1rem'
-                                }}
-                              />
-                            )}
-                            <div>
-                              <h6 className="mb-1">{offer.item?.title}</h6>
-                              <small className="text-muted">
+                  <div className="card border-0 shadow-sm" style={{ borderRadius: '18px', overflow: 'hidden' }}>
+                    <div className="card-body p-4">
+                      <div className="row g-4 align-items-start">
+                        <div className="col-lg-4">
+                          <div className="d-flex gap-3">
+                            {renderPrimaryImage(offer.item?.images, offer.item?.title)}
+                            <div className="flex-grow-1">
+                              <div className="d-flex align-items-center justify-content-between gap-2 mb-2">
+                                <h6 className="mb-0 fw-bold">{offer.item?.title}</h6>
+                                {getStatusBadge(offer.status)}
+                              </div>
+                              <small className="text-muted d-block mb-2">
                                 {activeTab === 'received' ? 'Таны зар' : 'Сонирхож буй зар'}
+                              </small>
+                              <p className="text-muted small mb-2">
+                                {truncateText(offer.item?.description || 'Зарын дэлгэрэнгүй тайлбар нэмэгдээгүй байна.', 120)}
+                              </p>
+                              <small className="text-muted d-block">
+                                <i className="fas fa-map-marker-alt me-1"></i>
+                                {offer.item?.location?.city || 'Байршилгүй'}
+                                {offer.item?.location?.district ? `, ${offer.item.location.district}` : ''}
                               </small>
                             </div>
                           </div>
                         </div>
 
-                        {/* Offer Details */}
-                        <div className="col-md-4">
-                          <div>
-                            <small className="text-muted d-block">Санал болгож буй:</small>
-                            {offer.offeredItems?.map((item, idx) => (
-                              <div key={idx} className="mb-1">
-                                <strong>{item.title}</strong>
-                                <span className="badge bg-light text-dark ms-2">{item.condition}</span>
+                        <div className="col-lg-5">
+                          <div className="bg-light rounded-4 p-3 h-100">
+                            <div className="d-flex align-items-center justify-content-between mb-3">
+                              <div>
+                                <small className="text-muted d-block">Санал болгож буй зүйлс</small>
+                                <strong>{offer.offeredItems?.length || 0} бүтээгдэхүүн</strong>
                               </div>
-                            ))}
-                            {offer.message && (
-                              <small className="text-muted d-block mt-2">"{offer.message}"</small>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* User Info */}
-                        <div className="col-md-2">
-                          <small className="text-muted d-block">
-                            {activeTab === 'received' ? 'Илгээгч:' : 'Хүлээн авагч:'}
-                          </small>
-                          <strong>
-                            {activeTab === 'received' ? offer.offeredBy?.name : offer.offeredTo?.name}
-                          </strong>
-                        </div>
-
-                        {/* Status & Actions */}
-                        <div className="col-md-3 text-end">
-                          <div className="mb-2">
-                            {getStatusBadge(offer.status)}
-                          </div>
-                          <small className="text-muted d-block mb-2">
-                            {new Date(offer.createdAt).toLocaleDateString('mn-MN')}
-                          </small>
-                          
-                          {activeTab === 'received' && offer.status === 'pending' && (
-                            <div className="d-grid gap-2">
                               <button
-                                className="btn btn-sm btn-success"
+                                className="btn btn-sm btn-outline-primary"
                                 onClick={() => setSelectedOffer(offer)}
                               >
-                                <i className="fas fa-check me-1"></i>Хариулах
+                                <i className="fas fa-eye me-1"></i>Дэлгэрэнгүй
                               </button>
                             </div>
-                          )}
 
-                          {offer.status === 'accepted' && (
-                            <button
-                              className="btn btn-sm btn-primary"
-                              onClick={() => navigate(`/chat/${offer._id}`)}
-                            >
-                              <i className="fas fa-comments me-1"></i>Чат
-                            </button>
-                          )}
+                            <div className="d-flex flex-column gap-3">
+                              {offer.offeredItems?.slice(0, 2).map((item, idx) => (
+                                <div key={idx} className="d-flex gap-3 bg-white rounded-4 p-3 border">
+                                  {renderPrimaryImage(item.images, item.title)}
+                                  <div className="flex-grow-1">
+                                    <div className="d-flex align-items-center justify-content-between gap-2 mb-1">
+                                      <strong>{item.title}</strong>
+                                      <span className="badge bg-light text-dark">{getConditionLabel(item.condition)}</span>
+                                    </div>
+                                    <p className="small text-muted mb-1">{truncateText(item.description, 110)}</p>
+                                    {item.estimatedValue ? (
+                                      <small className="text-muted d-block">
+                                        <i className="fas fa-tag me-1"></i>
+                                        {Number(item.estimatedValue).toLocaleString('en-US')} ₮
+                                      </small>
+                                    ) : null}
+                                  </div>
+                                </div>
+                              ))}
+
+                              {offer.offeredItems?.length > 2 && (
+                                <small className="text-muted">+{offer.offeredItems.length - 2} бүтээгдэхүүн нэмэлтээр байна</small>
+                              )}
+
+                              {offer.message && (
+                                <div className="border-start border-4 border-primary ps-3">
+                                  <small className="text-muted d-block mb-1">Саналын тайлбар</small>
+                                  <p className="mb-0">“{truncateText(offer.message, 160)}”</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="col-lg-3">
+                          <div className="d-flex flex-column gap-3 h-100">
+                            <div>
+                              <small className="text-muted d-block">
+                                {activeTab === 'received' ? 'Илгээгч' : 'Хүлээн авагч'}
+                              </small>
+                              <strong>
+                                {activeTab === 'received' ? offer.offeredBy?.name : offer.offeredTo?.name}
+                              </strong>
+                              {(activeTab === 'received' ? offer.offeredBy?.profile : offer.offeredTo?.profile) && (
+                                <small className="text-muted d-block mt-1">
+                                  <i className="fas fa-star text-warning me-1"></i>
+                                  {(activeTab === 'received' ? offer.offeredBy?.profile?.rating : offer.offeredTo?.profile?.rating) || '0.0'}
+                                  <span className="mx-1">•</span>
+                                  {(activeTab === 'received' ? offer.offeredBy?.profile?.totalTrades : offer.offeredTo?.profile?.totalTrades) || 0} солилцоо
+                                </small>
+                              )}
+                            </div>
+
+                            <small className="text-muted d-block">
+                              <i className="fas fa-calendar me-1"></i>
+                              {new Date(offer.createdAt).toLocaleDateString('mn-MN')}
+                            </small>
+
+                            {offer.responseMessage && (
+                              <div className="bg-light rounded-4 p-3">
+                                <small className="text-muted d-block mb-1">Хариу</small>
+                                <p className="small mb-0">{truncateText(offer.responseMessage, 120)}</p>
+                              </div>
+                            )}
+
+                            <div className="mt-auto d-grid gap-2">
+                              {activeTab === 'received' && offer.status === 'pending' && (
+                                <button
+                                  className="btn btn-success"
+                                  onClick={() => setSelectedOffer(offer)}
+                                >
+                                  <i className="fas fa-reply me-1"></i>Хариулах
+                                </button>
+                              )}
+
+                              {offer.status === 'accepted' && (
+                                <button
+                                  className="btn btn-primary"
+                                  onClick={() => navigate(`/chat/${offer._id}`)}
+                                >
+                                  <i className="fas fa-comments me-1"></i>Чат
+                                </button>
+                              )}
+
+                              <button
+                                className="btn btn-outline-secondary"
+                                onClick={() => setSelectedOffer(offer)}
+                              >
+                                <i className="fas fa-info-circle me-1"></i>Мэдээлэл
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -265,45 +368,182 @@ const OffersList = () => {
 
       {/* Response Modal */}
       {selectedOffer && (
-        <div className="modal show d-block" style={{ background: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content" style={{ borderRadius: '20px' }}>
-              <div className="modal-header border-0">
-                <h5 className="modal-title">Санал дээр хариу өгөх</h5>
+        <div className="modal show d-block" style={{ background: 'rgba(0,0,0,0.55)' }}>
+          <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div className="modal-content" style={{ borderRadius: '22px', overflow: 'hidden' }}>
+              <div className="modal-header border-0" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
+                <div>
+                  <h5 className="modal-title mb-1">Саналын дэлгэрэнгүй</h5>
+                  <small className="opacity-75">{selectedOffer.item?.title}</small>
+                </div>
                 <button
                   type="button"
-                  className="btn-close"
+                  className="btn-close btn-close-white"
                   onClick={() => {
                     setSelectedOffer(null);
                     setResponseMessage('');
                   }}
                 ></button>
               </div>
-              <div className="modal-body">
-                <div className="mb-3">
-                  <label className="form-label fw-bold">Хариу мессеж (заавал биш)</label>
-                  <textarea
-                    className="form-control"
-                    rows="4"
-                    placeholder="Таны хариу..."
-                    value={responseMessage}
-                    onChange={(e) => setResponseMessage(e.target.value)}
-                    maxLength={500}
-                  ></textarea>
+              <div className="modal-body p-4">
+                <div className="row g-4 mb-4">
+                  <div className="col-lg-5">
+                    <div className="border rounded-4 p-3 h-100">
+                      <div className="d-flex align-items-center justify-content-between mb-3">
+                        <h6 className="mb-0 fw-bold">Санал авсан зар</h6>
+                        {getStatusBadge(selectedOffer.status)}
+                      </div>
+                      {selectedOffer.item?.images?.length > 0 ? (
+                        <div className="row g-2 mb-3">
+                          {selectedOffer.item.images.slice(0, 4).map((image, index) => {
+                            const imageUrl = getImageUrl(image);
+                            return (
+                              <div key={index} className="col-6">
+                                <img
+                                  src={imageUrl}
+                                  alt={selectedOffer.item.title}
+                                  className="w-100"
+                                  style={{ height: '120px', objectFit: 'cover', borderRadius: '14px' }}
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="bg-light rounded-4 d-flex align-items-center justify-content-center mb-3" style={{ height: '220px' }}>
+                          <i className="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                      )}
+                      <h5 className="fw-bold mb-2">{selectedOffer.item?.title}</h5>
+                      <p className="text-muted mb-2">{selectedOffer.item?.description || 'Дэлгэрэнгүй тайлбар байхгүй байна.'}</p>
+                      <small className="text-muted d-block mb-1">
+                        <i className="fas fa-map-marker-alt me-1"></i>
+                        {selectedOffer.item?.location?.city || 'Байршилгүй'}
+                        {selectedOffer.item?.location?.district ? `, ${selectedOffer.item.location.district}` : ''}
+                      </small>
+                      <small className="text-muted d-block">
+                        <i className="fas fa-calendar me-1"></i>
+                        {new Date(selectedOffer.createdAt).toLocaleDateString('mn-MN')}
+                      </small>
+                    </div>
+                  </div>
+
+                  <div className="col-lg-7">
+                    <div className="border rounded-4 p-3 mb-4">
+                      <div className="d-flex align-items-center justify-content-between mb-3">
+                        <h6 className="mb-0 fw-bold">Санал болгосон бүтээгдэхүүнүүд</h6>
+                        <small className="text-muted">{selectedOffer.offeredItems?.length || 0} ширхэг</small>
+                      </div>
+                      <div className="d-flex flex-column gap-3">
+                        {selectedOffer.offeredItems?.map((item, index) => (
+                          <div key={index} className="border rounded-4 p-3">
+                            <div className="row g-3 align-items-start">
+                              <div className="col-md-3">
+                                {renderPrimaryImage(item.images, item.title)}
+                              </div>
+                              <div className="col-md-9">
+                                <div className="d-flex align-items-center justify-content-between mb-2 gap-2">
+                                  <h6 className="fw-bold mb-0">{item.title}</h6>
+                                  <span className="badge bg-light text-dark">{getConditionLabel(item.condition)}</span>
+                                </div>
+                                <p className="text-muted mb-2">{item.description}</p>
+                                <div className="d-flex flex-wrap gap-3">
+                                  {item.estimatedValue ? (
+                                    <small className="text-muted">
+                                      <i className="fas fa-tag me-1"></i>
+                                      {Number(item.estimatedValue).toLocaleString('en-US')} ₮
+                                    </small>
+                                  ) : null}
+                                  <small className="text-muted">
+                                    <i className="fas fa-images me-1"></i>
+                                    {item.images?.length || 0} зураг
+                                  </small>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="border rounded-4 p-3 mb-4">
+                      <div className="row g-3">
+                        <div className="col-md-6">
+                          <small className="text-muted d-block mb-1">Санал илгээгч</small>
+                          <strong>{selectedOffer.offeredBy?.name || 'Тодорхойгүй'}</strong>
+                        </div>
+                        <div className="col-md-6">
+                          <small className="text-muted d-block mb-1">Хүлээн авагч</small>
+                          <strong>{selectedOffer.offeredTo?.name || 'Тодорхойгүй'}</strong>
+                        </div>
+                      </div>
+                      {(selectedOffer.offeredBy?.profile || selectedOffer.offeredTo?.profile) && (
+                        <div className="row g-3 mt-1">
+                          <div className="col-md-6">
+                            <small className="text-muted d-block">Үнэлгээ</small>
+                            <strong>{selectedOffer.offeredBy?.profile?.rating || '0.0'}</strong>
+                          </div>
+                          <div className="col-md-6">
+                            <small className="text-muted d-block">Нийт солилцоо</small>
+                            <strong>{selectedOffer.offeredBy?.profile?.totalTrades || 0}</strong>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {selectedOffer.message && (
+                      <div className="border-start border-4 border-primary ps-3 mb-4">
+                        <small className="text-muted d-block mb-1">Нэмэлт тайлбар</small>
+                        <p className="mb-0">{selectedOffer.message}</p>
+                      </div>
+                    )}
+
+                    {selectedOffer.responseMessage && (
+                      <div className="alert alert-info mb-0">
+                        <strong className="d-block mb-1">Хариу</strong>
+                        {selectedOffer.responseMessage}
+                      </div>
+                    )}
+                  </div>
                 </div>
+
+                {activeTab === 'received' && selectedOffer.status === 'pending' && (
+                  <div className="border rounded-4 p-3 bg-light">
+                    <label className="form-label fw-bold">Хариу мессеж (заавал биш)</label>
+                    <textarea
+                      className="form-control mb-3"
+                      rows="4"
+                      placeholder="Саналд өгөх хариу..."
+                      value={responseMessage}
+                      onChange={(e) => setResponseMessage(e.target.value)}
+                      maxLength={500}
+                    ></textarea>
+                    <div className="d-flex gap-2 flex-wrap justify-content-end">
+                      <button
+                        className="btn btn-outline-danger"
+                        onClick={() => handleRejectOffer(selectedOffer._id)}
+                      >
+                        <i className="fas fa-times me-2"></i>Татгалзах
+                      </button>
+                      <button
+                        className="btn btn-success"
+                        onClick={() => handleAcceptOffer(selectedOffer._id)}
+                      >
+                        <i className="fas fa-check me-2"></i>Зөвшөөрөх
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="modal-footer border-0">
+              <div className="modal-footer border-0 bg-light">
                 <button
-                  className="btn btn-success"
-                  onClick={() => handleAcceptOffer(selectedOffer._id)}
+                  className="btn btn-outline-secondary"
+                  onClick={() => {
+                    setSelectedOffer(null);
+                    setResponseMessage('');
+                  }}
                 >
-                  <i className="fas fa-check me-2"></i>Зөвшөөрөх
-                </button>
-                <button
-                  className="btn btn-danger"
-                  onClick={() => handleRejectOffer(selectedOffer._id)}
-                >
-                  <i className="fas fa-times me-2"></i>Татгалзах
+                  Хаах
                 </button>
               </div>
             </div>

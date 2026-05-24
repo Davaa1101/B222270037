@@ -127,12 +127,6 @@ MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/dbname
 JWT_SECRET=your-super-secret-jwt-key-here
 JWT_EXPIRES_IN=7d
 
-# Email Configuration (Optional)
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_app_password
-
 # File Upload
 UPLOAD_PATH=./uploads
 MAX_FILE_SIZE=5242880

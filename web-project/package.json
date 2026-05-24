@@ -11,7 +11,9 @@
     "test:coverage": "jest --coverage --forceExit --detectOpenHandles",
     "test:performance": "node tests/performance.test.js",
     "test:security": "node tests/security.test.js",
-    "test:all": "npm test && npm run test:performance && npm run test:security",    "review": "node scripts/final-review.js",    "lint": "eslint . --ext .js",
+    "test:all": "npm test && npm run test:performance && npm run test:security",
+    "review": "node scripts/final-review.js",
+    "lint": "eslint . --ext .js",
     "lint:fix": "eslint . --ext .js --fix",
     "format": "prettier --write \"**/*.{js,json,md}\"",
     "format:check": "prettier --check \"**/*.{js,json,md}\"",
@@ -37,8 +39,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.3",
-    "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.7"
+    "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

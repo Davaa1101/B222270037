@@ -7,10 +7,14 @@ const Report = require('../models/Report');
 const User = require('../models/User');
 const Item = require('../models/Item');
 const Offer = require('../models/Offer');
+const Notification = require('../models/Notification');
 const { auth, adminAuth } = require('../middleware/auth');
-const { sendNotificationEmail } = require('../utils/email');
 
 const router = express.Router();
+
+const createNotification = async ({ user, type, title, message, link = '', offer }) => {
+  return Notification.create({ user, type, title, message, link, offer });
+};
 
 // Configure multer for evidence uploads
 const storage = multer.diskStorage({
@@ -134,7 +138,7 @@ router.post('/', auth, upload.array('evidence', 5), [
     await report.save();
     await report.populate('reportedBy', 'name email');
 
-    // Notify admin about new report
+    // Notify admins about new report
     try {
       const adminUsers = await User.find({ role: 'admin' });
       const reportTypeLabels = {
@@ -156,15 +160,16 @@ router.post('/', auth, upload.array('evidence', 5), [
       `;
 
       for (const admin of adminUsers) {
-        await sendNotificationEmail(
-          admin.email,
-          admin.name,
-          'Шинэ гомдол ирлээ',
-          notificationMessage
-        );
+        await createNotification({
+          user: admin._id,
+          type: 'new_report',
+          title: 'Шинэ гомдол ирлээ',
+          message: notificationMessage,
+          link: '/admin/reports'
+        });
       }
-    } catch (emailError) {
-      console.error('Failed to send report notification:', emailError);
+    } catch (notificationError) {
+      console.error('Failed to create report notification:', notificationError);
     }
 
     res.status(201).json({
@@ -382,16 +387,16 @@ router.patch('/admin/:id', auth, adminAuth, [
       if (targetUser) {
         switch (actionTaken) {
           case 'warning_sent':
-            // Send warning email
             try {
-              await sendNotificationEmail(
-                targetUser.email,
-                targetUser.name,
-                'Анхааруулга',
-                `Таны үйлдлийн талаар гомдол ирсэн байна. Платформын дүрмийг сахиж ажиллана уу.${adminNotes ? `\n\nТайлбар: ${adminNotes}` : ''}`
-              );
-            } catch (emailError) {
-              console.error('Failed to send warning email:', emailError);
+              await createNotification({
+                user: targetUser._id,
+                type: 'warning_sent',
+                title: 'Анхааруулга',
+                message: `Таны үйлдлийн талаар гомдол ирсэн байна. Платформын дүрмийг сахиж ажиллана уу.${adminNotes ? `\n\nТайлбар: ${adminNotes}` : ''}`,
+                link: '/notifications'
+              });
+            } catch (notificationError) {
+              console.error('Failed to create warning notification:', notificationError);
             }
             break;
           
@@ -399,14 +404,15 @@ router.patch('/admin/:id', auth, adminAuth, [
             targetUser.status = 'suspended';
             await targetUser.save();
             try {
-              await sendNotificationEmail(
-                targetUser.email,
-                targetUser.name,
-                'Данс түр хаалттай',
-                `Таны данс түр хаагдлаа. Дэлгэрэнгүйг админтай холбогдоно уу.${adminNotes ? `\n\nШалтгаан: ${adminNotes}` : ''}`
-              );
-            } catch (emailError) {
-              console.error('Failed to send suspension email:', emailError);
+              await createNotification({
+                user: targetUser._id,
+                type: 'account_suspended',
+                title: 'Данс түр хаалттай',
+                message: `Таны данс түр хаагдлаа. Дэлгэрэнгүйг админтай холбогдоно уу.${adminNotes ? `\n\nШалтгаан: ${adminNotes}` : ''}`,
+                link: '/notifications'
+              });
+            } catch (notificationError) {
+              console.error('Failed to create suspension notification:', notificationError);
             }
             break;
           
@@ -414,14 +420,15 @@ router.patch('/admin/:id', auth, adminAuth, [
             targetUser.status = 'banned';
             await targetUser.save();
             try {
-              await sendNotificationEmail(
-                targetUser.email,
-                targetUser.name,
-                'Данс бүрмөсөн хаалттай',
-                `Таны данс бүрмөсөн хаагдлаа.${adminNotes ? `\n\nШалтгаан: ${adminNotes}` : ''}`
-              );
-            } catch (emailError) {
-              console.error('Failed to send ban email:', emailError);
+              await createNotification({
+                user: targetUser._id,
+                type: 'account_banned',
+                title: 'Данс бүрмөсөн хаалттай',
+                message: `Таны данс бүрмөсөн хаагдлаа.${adminNotes ? `\n\nШалтгаан: ${adminNotes}` : ''}`,
+                link: '/notifications'
+              });
+            } catch (notificationError) {
+              console.error('Failed to create ban notification:', notificationError);
             }
             break;
         }
@@ -440,14 +447,15 @@ router.patch('/admin/:id', auth, adminAuth, [
         ? 'Таны гомдол шийдэгдлээ. Арга хэмжээ авлаа.'
         : 'Таны гомдлыг шалгасны дараа цаашдын арга хэмжээ авах шаардлагагүй гэж үзлээ.';
       
-      await sendNotificationEmail(
-        report.reportedBy.email,
-        report.reportedBy.name,
-        'Гомдлын хариу',
-        `${resolutionMessage}${adminNotes ? `\n\nТайлбар: ${adminNotes}` : ''}`
-      );
-    } catch (emailError) {
-      console.error('Failed to send resolution notification:', emailError);
+      await createNotification({
+        user: report.reportedBy._id,
+        type: 'report_update',
+        title: 'Гомдлын хариу',
+        message: `${resolutionMessage}${adminNotes ? `\n\nТайлбар: ${adminNotes}` : ''}`,
+        link: '/notifications'
+      });
+    } catch (notificationError) {
+      console.error('Failed to create resolution notification:', notificationError);
     }
 
     await report.populate('resolvedBy', 'name');

@@ -5,10 +5,14 @@ const Item = require('../models/Item');
 const Offer = require('../models/Offer');
 const Report = require('../models/Report');
 const { Category, Setting } = require('../models/index');
+const Notification = require('../models/Notification');
 const { auth, adminAuth } = require('../middleware/auth');
-const { sendNotificationEmail } = require('../utils/email');
 
 const router = express.Router();
+
+const createNotification = async ({ user, type, title, message, link = '', offer }) => {
+  return Notification.create({ user, type, title, message, link, offer });
+};
 
 // Apply admin auth to all routes
 router.use(auth, adminAuth);
@@ -238,14 +242,15 @@ router.patch('/users/:id/status', [
 
     if (notificationMessage) {
       try {
-        await sendNotificationEmail(
-          user.email,
-          user.name,
-          subject,
-          notificationMessage + (reason ? `\n\nШалтгаан: ${reason}` : '')
-        );
-      } catch (emailError) {
-        console.error('Failed to send status change notification:', emailError);
+        await createNotification({
+          user: user._id,
+          type: `user_${status}`,
+          title: subject,
+          message: notificationMessage + (reason ? `\n\nШалтгаан: ${reason}` : ''),
+          link: '/notifications'
+        });
+      } catch (notificationError) {
+        console.error('Failed to create status change notification:', notificationError);
       }
     }
 
@@ -348,14 +353,15 @@ router.delete('/items/:id', [
 
     // Notify item owner
     try {
-      await sendNotificationEmail(
-        item.owner.email,
-        item.owner.name,
-        'Зар хасагдлаа',
-        `Таны "${item.title}" нэртэй зар админаар хасагдлаа.${reason ? `\n\nШалтгаан: ${reason}` : ''}`
-      );
-    } catch (emailError) {
-      console.error('Failed to send item removal notification:', emailError);
+      await createNotification({
+        user: item.owner._id,
+        type: 'item_removed',
+        title: 'Зар хасагдлаа',
+        message: `Таны "${item.title}" нэртэй зар админаар хасагдлаа.${reason ? `\n\nШалтгаан: ${reason}` : ''}`,
+        link: '/notifications'
+      });
+    } catch (notificationError) {
+      console.error('Failed to create item removal notification:', notificationError);
     }
 
     res.json({ message: 'Зар амжилттай хасагдлаа' });

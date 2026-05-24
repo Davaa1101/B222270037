@@ -6,11 +6,15 @@ const { body, validationResult, query } = require('express-validator');
 const Offer = require('../models/Offer');
 const Item = require('../models/Item');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const { Chat } = require('../models/index');
 const { auth } = require('../middleware/auth');
-const { sendOfferNotification } = require('../utils/email');
 
 const router = express.Router();
+
+const createNotification = async ({ user, type, title, message, link = '', offer }) => {
+  return Notification.create({ user, type, title, message, link, offer });
+};
 
 // Configure multer for offer images
 const storage = multer.diskStorage({
@@ -152,16 +156,17 @@ router.post('/', auth, upload.array('images', 10), [
     await offer.save();
     await offer.populate(['offeredBy', 'offeredTo', 'item']);
 
-    // Send notification email to item owner
     try {
-      await sendOfferNotification(
-        item.owner.email,
-        item.owner.name,
-        item.title,
-        message || 'Шинэ санал ирлээ'
-      );
-    } catch (emailError) {
-      console.error('Failed to send offer notification:', emailError);
+      await createNotification({
+        user: item.owner._id,
+        type: 'new_offer',
+        title: 'Шинэ санал ирлээ',
+        message: `Таны "${item.title}" зар дээр шинэ санал ирлээ.`,
+        link: '/offers',
+        offer: offer._id
+      });
+    } catch (notificationError) {
+      console.error('Failed to create offer notification:', notificationError);
     }
 
     res.status(201).json({
@@ -260,7 +265,7 @@ router.get('/sent', auth, [
 
     const offers = await Offer.find(filter)
       .populate('offeredTo', 'name location')
-      .populate('item', 'title images location')
+      .populate('item', 'title description images location owner')
       .sort({ createdAt: -1 })
       .limit(limit)
       .skip(skip);
@@ -309,7 +314,7 @@ router.get('/received', auth, [
 
     const offers = await Offer.find(filter)
       .populate('offeredBy', 'name location profile.rating profile.totalTrades')
-      .populate('item', 'title images location')
+      .populate('item', 'title description images location owner')
       .sort({ createdAt: -1 })
       .limit(limit)
       .skip(skip);
@@ -385,25 +390,38 @@ router.patch('/:id/respond', auth, [
       });
       
       await chat.save();
+
+      try {
+        await createNotification({
+          user: offer.offeredBy._id,
+          type: 'offer_accepted',
+          title: 'Санал хүлээн авагдлаа',
+          message: `Таны "${offer.item.title}" зар дээрх санал хүлээн авагдлаа.`,
+          link: '/offers',
+          offer: offer._id
+        });
+      } catch (notificationError) {
+        console.error('Failed to create acceptance notification:', notificationError);
+      }
     }
 
     await offer.save();
 
-    // Send notification to offer sender
     try {
       const notificationMessage = action === 'accept' 
         ? `Таны "${offer.item.title}" зар дээрх санал хүлээн авагдлаа!`
         : `Таны "${offer.item.title}" зар дээрх санал татгалзагдлаа.`;
-      
-      const { sendNotificationEmail } = require('../utils/email');
-      await sendNotificationEmail(
-        offer.offeredBy.email,
-        offer.offeredBy.name,
-        action === 'accept' ? 'Санал хүлээн авагдлаа' : 'Санал татгалзагдлаа',
-        notificationMessage + (responseMessage ? `\n\nХариу: ${responseMessage}` : '')
-      );
-    } catch (emailError) {
-      console.error('Failed to send response notification:', emailError);
+
+      await createNotification({
+        user: offer.offeredBy._id,
+        type: action === 'accept' ? 'offer_accepted' : 'offer_rejected',
+        title: action === 'accept' ? 'Санал хүлээн авагдлаа' : 'Санал татгалзагдлаа',
+        message: notificationMessage + (responseMessage ? `\n\nХариу: ${responseMessage}` : ''),
+        link: '/offers',
+        offer: offer._id
+      });
+    } catch (notificationError) {
+      console.error('Failed to create response notification:', notificationError);
     }
 
     res.json({
@@ -479,7 +497,16 @@ router.patch('/:id/complete', auth, [
       return res.status(403).json({ message: 'Энэ саналыг дуусгах эрхгүй' });
     }
 
-    // Check if offer is accepted
+    // If already completed, treat it as a successful no-op so the other participant
+    // can also press "Дууссан" without getting an error.
+    if (offer.status === 'completed') {
+      return res.json({
+        message: 'Арилжаа аль хэдийн дууссан байна',
+        offer
+      });
+    }
+
+    // Check if offer is accepted before allowing completion
     if (offer.status !== 'accepted') {
       return res.status(400).json({ message: 'Зөвхөн зөвшөөрөгдсөн саналыг дуусгаж болно' });
     }
@@ -491,7 +518,7 @@ router.patch('/:id/complete', auth, [
     
     await offer.save();
 
-    // Update user trade statistics
+    // Update user trade statistics only on the first completion
     await User.findByIdAndUpdate(offer.offeredBy, { 
       $inc: { 'profile.totalTrades': 1 } 
     });
@@ -567,18 +594,30 @@ router.put('/:id/accept', auth, [
     await chat.save();
     await offer.save();
 
-    // Send notification to offer sender
     try {
-      const { sendNotificationEmail } = require('../utils/email');
-      await sendNotificationEmail(
-        offer.offeredBy.email,
-        offer.offeredBy.name,
-        'Санал хүлээн авагдлаа',
-        `Таны "${offer.item.title}" зар дээрх санал хүлээн авагдлаа!` + 
-        (responseMessage ? `\n\nХариу: ${responseMessage}` : '')
-      );
-    } catch (emailError) {
-      console.error('Failed to send acceptance notification:', emailError);
+      await createNotification({
+        user: offer.offeredBy._id,
+        type: 'offer_accepted',
+        title: 'Санал хүлээн авагдлаа',
+        message: `Таны "${offer.item.title}" зар дээрх санал хүлээн авагдлаа.`,
+        link: '/offers',
+        offer: offer._id
+      });
+    } catch (notificationError) {
+      console.error('Failed to create acceptance notification:', notificationError);
+    }
+
+    try {
+      await createNotification({
+        user: offer.offeredBy._id,
+        type: 'offer_accepted',
+        title: 'Санал хүлээн авагдлаа',
+        message: `Таны "${offer.item.title}" зар дээрх санал хүлээн авагдлаа!${responseMessage ? `\n\nХариу: ${responseMessage}` : ''}`,
+        link: '/offers',
+        offer: offer._id
+      });
+    } catch (notificationError) {
+      console.error('Failed to create acceptance notification:', notificationError);
     }
 
     res.json({
@@ -632,18 +671,17 @@ router.put('/:id/reject', auth, [
     
     await offer.save();
 
-    // Send notification to offer sender
     try {
-      const { sendNotificationEmail } = require('../utils/email');
-      await sendNotificationEmail(
-        offer.offeredBy.email,
-        offer.offeredBy.name,
-        'Санал татгалзагдлаа',
-        `Таны "${offer.item.title}" зар дээрх санал татгалзагдлаа.` + 
-        (responseMessage ? `\n\nХариу: ${responseMessage}` : '')
-      );
-    } catch (emailError) {
-      console.error('Failed to send rejection notification:', emailError);
+      await createNotification({
+        user: offer.offeredBy._id,
+        type: 'offer_rejected',
+        title: 'Санал татгалзагдлаа',
+        message: `Таны "${offer.item.title}" зар дээрх санал татгалзагдлаа.${responseMessage ? `\n\nХариу: ${responseMessage}` : ''}`,
+        link: '/offers',
+        offer: offer._id
+      });
+    } catch (notificationError) {
+      console.error('Failed to create rejection notification:', notificationError);
     }
 
     res.json({
@@ -672,7 +710,15 @@ router.put('/:id/complete', auth, async (req, res) => {
       return res.status(403).json({ message: 'Энэ саналыг дуусгах эрхгүй' });
     }
 
-    // Check if offer is accepted
+    // If already completed, let the second participant confirm without error.
+    if (offer.status === 'completed') {
+      return res.json({
+        message: 'Арилжаа аль хэдийн дууссан байна',
+        offer
+      });
+    }
+
+    // Check if offer is accepted before allowing completion
     if (offer.status !== 'accepted') {
       return res.status(400).json({ message: 'Зөвхөн зөвшөөрөгдсөн саналыг дуусгаж болно' });
     }
@@ -680,7 +726,7 @@ router.put('/:id/complete', auth, async (req, res) => {
     offer.status = 'completed';
     await offer.save();
 
-    // Update user trade statistics
+    // Update user trade statistics only on the first completion
     await User.findByIdAndUpdate(offer.offeredBy, { 
       $inc: { 'profile.totalTrades': 1 } 
     });
