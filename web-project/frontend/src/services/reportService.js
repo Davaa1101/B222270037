@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE = process.env.REACT_APP_API_BASE || '/api';
+const DEFAULT_PRODUCTION_API_BASE = 'https://cs316-production.up.railway.app/api';
+const API_BASE = process.env.REACT_APP_API_BASE || (process.env.NODE_ENV === 'production' ? DEFAULT_PRODUCTION_API_BASE : '/api');
 
 export const reportService = {
   // Create a new report

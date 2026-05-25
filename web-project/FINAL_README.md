@@ -245,6 +245,9 @@ Development: http://localhost:3000/api
 Production: https://cs316-production.up.railway.app/api
 ```
 
+### Vercel Frontend Environment
+If you deploy the React app to Vercel, set `REACT_APP_API_BASE` to the Railway backend URL above. Without it, the frontend may try to call `/api` on the Vercel domain and show `зар ачааллахад алдаа гарлаа`.
+
 ### Authentication Endpoints
 
 #### POST /api/auth/register
