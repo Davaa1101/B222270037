@@ -1,0 +1,8 @@
+{
+  "name": "b222270037-root",
+  "private": true,
+  "scripts": {
+    "build": "cd web-project && npm install",
+    "start": "cd web-project && npm start"
+  }
+}
