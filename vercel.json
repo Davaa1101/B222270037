@@ -1,0 +1,11 @@
+{
+  "installCommand": "cd web-project/frontend && npm install",
+  "buildCommand": "cd web-project/frontend && npm run build",
+  "outputDirectory": "web-project/frontend/build",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
