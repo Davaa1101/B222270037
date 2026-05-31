@@ -30,7 +30,7 @@ const Report = () => {
     { value: 'fraudulent_behavior', label: 'Хууран мэхлэх оролдлого' },
     { value: 'inappropriate_content', label: 'Зохисгүй зураг эсвэл тайлбар' },
     { value: 'prohibited_items', label: 'Хориотой бараа' },
-    { value: 'spam', label: 'Давтан зар нийтлэх (спам)' },
+    { value: 'spam', label: 'Давтан зарлал нийтлэх (спам)' },
     { value: 'no_response', label: 'Хариу өгөхгүй байх' },
     { value: 'harassment', label: 'Доромжлол эсвэл заналхийлэл' },
     { value: 'other', label: 'Бусад' }

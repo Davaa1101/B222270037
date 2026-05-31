@@ -59,7 +59,7 @@ const AddItem = () => {
       
       // Check if user owns this item
       if (item.owner._id !== user.id && item.owner._id !== user._id) {
-        setAlert({ message: 'Та зөвхөн өөрийн зарыг засах боломжтой', type: 'error' });
+        setAlert({ message: 'Та зөвхөн өөрийн зарлалыг засах боломжтой', type: 'error' });
         setTimeout(() => navigate(`/profile/${user?.id || user?._id}`), 2000);
         return;
       }
@@ -82,7 +82,7 @@ const AddItem = () => {
       }
     } catch (error) {
       console.error('Error loading item:', error);
-      setAlert({ message: 'Зар ачаалахад алдаа гарлаа', type: 'error' });
+      setAlert({ message: 'Зарлал ачаалахад алдаа гарлаа', type: 'error' });
     }
   };
 
@@ -225,7 +225,7 @@ const AddItem = () => {
           // Keep existing images
           result = await itemService.updateItem(itemId, itemData);
         }
-        setAlert({ message: 'Зар амжилттай шинэчлэгдлээ!', type: 'success' });
+        setAlert({ message: 'Зарлал амжилттай шинэчлэгдлээ!', type: 'success' });
       } else {
         // Create new item
         if (imageFiles.length > 0) {
@@ -233,7 +233,7 @@ const AddItem = () => {
         } else {
           result = await itemService.createItem(itemData);
         }
-        setAlert({ message: 'Зар амжилттай нэмэгдлээ!', type: 'success' });
+        setAlert({ message: 'Зарлал амжилттай нэмэгдлээ!', type: 'success' });
       }
 
       // Redirect to item view or profile
@@ -248,7 +248,7 @@ const AddItem = () => {
     } catch (error) {
       console.error('Error saving item:', error);
       const message = error.response?.data?.message || 
-        (isEditing ? 'Зар шинэчлэхэд алдаа гарлаа' : 'Зар нэмэхэд алдаа гарлаа');
+        (isEditing ? 'Зарлал шинэчлэхэд алдаа гарлаа' : 'Зарлал нэмэхэд алдаа гарлаа');
       setAlert({ message, type: 'error' });
     } finally {
       setLoading(false);
@@ -267,7 +267,7 @@ const AddItem = () => {
           
           <div className="card border-0" style={{ boxShadow: '0 15px 35px rgba(0, 0, 0, 0.1)', borderRadius: '20px', overflow: 'hidden' }}>
             <div className="card-header border-0" style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 54%, var(--bs-warning) 100%)',
               color: 'white',
               padding: '2rem'
             }}>
@@ -285,7 +285,7 @@ const AddItem = () => {
                 </div>
                 <div>
                   <h3 className="mb-1 fw-bold">
-                    {isEditing ? 'Зар засах' : 'Шинэ зар нэмэх'}
+                    {isEditing ? 'Зарлал засах' : 'Шинэ зарлал нэмэх'}
                   </h3>
                   <p className="mb-0 opacity-90">Барааны мэдээллийг бүрэн оруулна уу</p>
                 </div>
@@ -514,20 +514,18 @@ const AddItem = () => {
                     className="btn btn-primary"
                     disabled={loading}
                     style={{
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      border: 'none',
                       minWidth: '150px'
                     }}
                   >
                     {loading ? (
                       <>
                         <i className="fas fa-spinner fa-spin me-2"></i>
-                        {isEditing ? 'Шинэчилж байна...' : 'Нэмж байна...'}
+                        {isEditing ? 'Шинэчилж байна...' : 'Шинэчилж байна...'}
                       </>
                     ) : (
                       <>
                         <i className={`fas ${isEditing ? 'fa-save' : 'fa-plus'} me-2`}></i>
-                        {isEditing ? 'Шинэчлэх' : 'Зар нэмэх'}
+                        {isEditing ? 'Шинэчлэх' : 'Шинэ зарлал нэмэх'}
                       </>
                     )}
                   </button>

@@ -195,7 +195,7 @@ const Chat = () => {
               </div>
               <div>
                 <h5 className="mb-0">{otherUser.name}</h5>
-                <small>Зарын талаар: {offer.item.title}</small>
+                <small>Зарлалын талаар: {offer.item.title}</small>
               </div>
             </div>
             <div>

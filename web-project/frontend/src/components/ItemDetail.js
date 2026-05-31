@@ -25,7 +25,7 @@ const ItemDetail = () => {
       setItem(data);
     } catch (error) {
       console.error('Error loading item:', error);
-      setAlert({ message: 'Зар ачаалахад алдаа гарлаа', type: 'error' });
+      setAlert({ message: 'Зарлал ачаалахад алдаа гарлаа', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -55,7 +55,7 @@ const ItemDetail = () => {
     }
     try {
       await itemService.toggleFavorite(itemId);
-      setAlert({ message: 'Зар хадгалагдлаа', type: 'success' });
+      setAlert({ message: 'Зарлал хадгалагдлаа', type: 'success' });
       loadItem(); // Reload to update bookmark status
     } catch (error) {
       console.error('Error bookmarking item:', error);
@@ -84,7 +84,7 @@ const ItemDetail = () => {
   if (!item) {
     return (
       <div className="container py-5 text-center">
-        <h3>Зар олдсонгүй</h3>
+        <h3>Зарлал олдсонгүй</h3>
         <Link to="/" className="btn btn-primary mt-3">Нүүр хуудас руу буцах</Link>
       </div>
     );
@@ -136,7 +136,7 @@ const ItemDetail = () => {
                 {/* Thumbnail Navigation */}
                 {item.images.length > 1 && (
                   <div className="p-3 bg-white d-flex gap-2 overflow-auto">
-                    {item.images.map((image, index) => (
+                          {item.images.map((image, index) => (
                       <img
                         key={index}
                         src={getImageUrl(image)}
@@ -147,7 +147,7 @@ const ItemDetail = () => {
                           height: '80px',
                           objectFit: 'cover',
                           borderRadius: '10px',
-                          border: currentImageIndex === index ? '3px solid #667eea' : '3px solid transparent',
+                                border: currentImageIndex === index ? '3px solid var(--bs-primary)' : '3px solid transparent',
                           cursor: 'pointer'
                         }}
                         onClick={() => setCurrentImageIndex(index)}
@@ -156,8 +156,8 @@ const ItemDetail = () => {
                   </div>
                 )}
               </>
-            ) : (
-              <div className="d-flex align-items-center justify-content-center" style={{ height: '500px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+              ) : (
+              <div className="d-flex align-items-center justify-content-center" style={{ height: '500px', background: 'linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 54%)' }}>
                 <div className="text-center text-white">
                   <i className="fas fa-image fa-5x mb-3 opacity-50"></i>
                   <h4>Зураг байхгүй</h4>
@@ -213,14 +213,14 @@ const ItemDetail = () => {
 
               {/* Owner Info - Limited for guests */}
               <div className="mb-4 p-3 border rounded">
-                <h5 className="fw-bold mb-2"><i className="fas fa-user me-2 text-success"></i>Зарын эзэмшигч</h5>
+                <h5 className="fw-bold mb-2"><i className="fas fa-user me-2 text-success"></i>Зарлалын эзэмшигч</h5>
                 {isAuthenticated ? (
                   <Link to={`/profile/${item.owner?._id}`} className="text-decoration-none">
                     <div className="d-flex align-items-center">
                       <div className="me-3" style={{
                         width: '50px',
                         height: '50px',
-                        background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                        background: 'linear-gradient(135deg, var(--bs-primary), var(--bs-info))',
                         borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',
@@ -259,17 +259,15 @@ const ItemDetail = () => {
               <div className="d-grid gap-2">
                 {!isOwner && item.status === 'active' && (
                   <button
-                    className="btn btn-lg text-white"
-                    onClick={handleMakeOffer}
-                    style={{
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      border: 'none',
-                      borderRadius: '15px'
-                    }}
-                  >
-                    <i className="fas fa-handshake me-2"></i>
-                    {isAuthenticated ? 'Санал илгээх' : 'Нэвтэрч санал илгээх'}
-                  </button>
+                      className="btn btn-lg btn-primary"
+                      onClick={handleMakeOffer}
+                      style={{
+                        borderRadius: '15px'
+                      }}
+                    >
+                      <i className="fas fa-handshake me-2"></i>
+                      {isAuthenticated ? 'Санал илгээх' : 'Нэвтэрч санал илгээх'}
+                    </button>
                 )}
 
                 {isOwner && (

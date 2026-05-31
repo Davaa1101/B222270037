@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { itemService } from '../services/itemService';
 import ItemCard from './ItemCard';
-import SearchSection from './SearchSection';
 import Alert from './Alert';
+import { useSearchParams } from 'react-router-dom';
 
 const Home = () => {
-  const { user } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState(null);
   const [, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('newest');
   const [alert, setAlert] = useState(null);
+  const [searchParams] = useSearchParams();
 
   const loadItems = async (page = 1, sort = 'newest') => {
     try {
@@ -28,7 +27,7 @@ const Home = () => {
       setCurrentPage(page);
     } catch (error) {
       console.error('Failed to load items:', error);
-      showAlert('Зар ачаалахад алдаа гарлаа', 'error');
+      showAlert('Зарлал ачаалахад алдаа гарлаа', 'error');
     } finally {
       setLoading(false);
     }
@@ -45,7 +44,7 @@ const Home = () => {
       setPagination(data.pagination);
       
       if (data.items && data.items.length > 0) {
-        showAlert(`${data.items.length} зар олдлоо`, 'success');
+        showAlert(`${data.items.length} зарлал олдлоо`, 'success');
       } else {
         showAlert('Хайлтын үр дүн олдсонгүй', 'info');
       }
@@ -72,8 +71,26 @@ const Home = () => {
   };
 
   useEffect(() => {
-    loadItems();
-  }, []);
+    const query = Object.fromEntries(searchParams.entries());
+    const hasSearchQuery = Object.values(query).some((value) => Boolean(value));
+
+    if (hasSearchQuery) {
+      if (query.sortBy) {
+        setSortBy(query.sortBy);
+      }
+
+      handleSearch({
+        search: query.search || '',
+        category: query.category || '',
+        location: query.location || '',
+        sortBy: query.sortBy || 'newest'
+      });
+      return;
+    }
+
+    loadItems(1, 'newest');
+    setSortBy('newest');
+  }, [searchParams]);
 
   const renderPagination = () => {
     if (!pagination || pagination.totalPages <= 1) return null;
@@ -136,35 +153,12 @@ const Home = () => {
   return (
     <div className="container-fluid px-4 mt-4" style={{ maxWidth: '1400px', margin: '0 auto' }}>
       {alert && <Alert message={alert.message} type={alert.type} onClose={() => setAlert(null)} />}
-      
-      {/* Hero Section */}
-      <div className="hero-section mb-4 text-center" style={{ padding: '3rem 1.5rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: '15px' }}>
-        <div className="container">
-          <h1 className="display-4 mb-3 text-white fw-bold">Онлайн Солилцооны Платформ</h1>
-          <p className="lead mb-3 text-white opacity-90" style={{ fontSize: '1.1rem' }}>Өөрт хэрэггүй зүйлсээ хэрэгтэй зүйлсээр солилцоорой</p>
-          {!user && (
-            <div className="d-flex justify-content-center gap-3">
-              <a href="/signup" className="btn btn-light btn-lg px-4 py-2" style={{ borderRadius: '25px', fontWeight: '600' }}>
-                <i className="fas fa-user-plus me-2"></i>Бүртгүүлэх
-              </a>
-              <a href="/login" className="btn btn-outline-light btn-lg px-4 py-2" style={{ borderRadius: '25px', fontWeight: '600' }}>
-                <i className="fas fa-sign-in-alt me-2"></i>Нэвтрэх
-              </a>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Search Section */}
-      <div id="search-section">
-        <SearchSection onSearch={handleSearch} onClear={() => loadItems()} />
-      </div>
 
       {/* Items Section */}
       <div className="mb-5">
         <div className="row align-items-center mb-4">
           <div className="col-md-8">
-            <h2 className="mb-2 fw-bold" style={{ color: '#2c3e50' }}>Бүх зарууд</h2>
+            <h2 className="mb-2 fw-bold" style={{ color: '#2c3e50' }}>Бүх зарлалууд</h2>
             <p className="text-muted mb-0">Та хүссэн зүйлээ энд олж болно</p>
           </div>
           <div className="col-md-4 text-md-end">
@@ -189,14 +183,14 @@ const Home = () => {
             <div className="spinner-border text-primary" role="status" style={{ width: '3rem', height: '3rem' }}>
               <span className="visually-hidden">Ачааллаж байна...</span>
             </div>
-            <h5 className="mt-4 text-muted">Зарууд ачааллаж байна...</h5>
+            <h5 className="mt-4 text-muted">Зарлалууд ачааллаж байна...</h5>
             <p className="text-muted">Түр хүлээнэ үү</p>
           </div>
         ) : items.length === 0 ? (
           <div className="text-center py-5" style={{ minHeight: '400px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <i className="fas fa-box-open text-muted mb-4" style={{ fontSize: '5rem', opacity: '0.5' }}></i>
-            <h4 className="text-muted mb-3">Зар олдсонгүй</h4>
-            <p className="text-muted mb-4" style={{ fontSize: '1.1rem' }}>Удахгүй шинэ зарууд нэмэгдэнэ эсвэл хайлтаа өөрчилнө үү</p>
+            <h4 className="text-muted mb-3">Зарлал олдсонгүй</h4>
+            <p className="text-muted mb-4" style={{ fontSize: '1.1rem' }}>Удахгүй шинэ зарлалууд нэмэгдэнэ эсвэл хайлтаа өөрчилнө үү</p>
             <button 
               className="btn btn-primary px-4 py-2" 
               style={{ borderRadius: '25px', maxWidth: '200px', margin: '0 auto' }}

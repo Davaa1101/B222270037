@@ -127,8 +127,6 @@ const Login = () => {
               className="btn btn-primary w-100 mb-3"
               disabled={loading}
               style={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                border: 'none',
                 borderRadius: '25px',
                 height: '50px',
                 fontWeight: 500

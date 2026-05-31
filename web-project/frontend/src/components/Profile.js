@@ -152,7 +152,7 @@ const Profile = () => {
         <div className="col-xl-3 col-lg-4 mb-4">
           <div className="card border-0" style={{ boxShadow: '0 15px 35px rgba(0, 0, 0, 0.1)', borderRadius: '20px', overflow: 'hidden' }}>
             <div className="card-header border-0" style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #1f6f43 0%, #2c7a7b 62%, #c79a2a 100%)',
               color: 'white',
               padding: '1.5rem'
             }}>
@@ -265,9 +265,9 @@ const Profile = () => {
                          style={{ 
                            width: '120px', 
                            height: '120px',
-                           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                           background: 'linear-gradient(135deg, #1f6f43 0%, #2c7a7b 62%, #c79a2a 100%)',
                            borderRadius: '50%',
-                           boxShadow: '0 10px 25px rgba(102, 126, 234, 0.3)'
+                           boxShadow: '0 10px 25px rgba(31, 111, 67, 0.28)'
                          }}>
                       <i className="fas fa-user fa-3x text-white"></i>
                     </div>
@@ -317,7 +317,7 @@ const Profile = () => {
                     <div className="col-6">
                       <div className="border-end">
                         <h5 className="text-primary mb-0">{userItems.length}</h5>
-                        <small className="text-muted">Зарласан</small>
+                        <small className="text-muted">Нийтэлсэн</small>
                       </div>
                     </div>
                     <div className="col-6">
@@ -332,7 +332,7 @@ const Profile = () => {
                   {isOwner && (
                     <div className="mt-4 d-grid">
                       <Link to="/add-item" className="btn btn-success">
-                        <i className="fas fa-plus me-2"></i>Шинэ зар нэмэх
+                        <i className="fas fa-plus me-2"></i>Шинэ зарлал нэмэх
                       </Link>
                     </div>
                   )}
@@ -346,12 +346,12 @@ const Profile = () => {
         <div className="col-lg-8">
           <div className="card shadow-sm border-0">
             <div className="card-header" style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #1f6f43 0%, #2c7a7b 62%, #c79a2a 100%)',
               color: 'white'
             }}>
               <h5 className="mb-0">
                 <i className="fas fa-boxes me-2"></i>
-                {isOwner ? 'Миний зарууд' : `${profile.username}-ийн зарууд`} 
+                {isOwner ? 'Миний зарлалууд' : `${profile.username}-ийн зарлалууд`} 
                 <span className="badge bg-light text-dark ms-2">{userItems.length}</span>
               </h5>
             </div>
@@ -360,15 +360,15 @@ const Profile = () => {
               {itemsLoading ? (
                 <div className="text-center py-5">
                   <i className="fas fa-spinner fa-spin fa-2x text-primary mb-3"></i>
-                  <p className="text-muted">Зарууд ачаалж байна...</p>
+                  <p className="text-muted">Зарлалууд ачаалж байна...</p>
                 </div>
               ) : userItems.length === 0 ? (
                 <div className="text-center py-5">
                   <i className="fas fa-box-open fa-3x text-muted mb-3"></i>
-                  <h6>Одоогоор зар байхгүй байна</h6>
+                  <h6>Одоогоор зарлал байхгүй байна</h6>
                   {isOwner && (
                     <Link to="/add-item" className="btn btn-success mt-3">
-                      <i className="fas fa-plus me-2"></i>Эхний зараа нэмэх
+                      <i className="fas fa-plus me-2"></i>Эхний зарлалаа нэмэх
                     </Link>
                   )}
                 </div>

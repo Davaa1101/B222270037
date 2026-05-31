@@ -43,20 +43,20 @@ const ItemCard = ({ item, currentUser, isOwner }) => {
 
   return (
     <Link to={`/item/${item._id}`} className="text-decoration-none">
-      <div className="card h-100 border-0" style={{
+      <div className="card h-100 border-0 item-card" style={{
         transition: 'all 0.3s ease-in-out',
         cursor: 'pointer',
         borderRadius: '16px',
         overflow: 'hidden',
-        boxShadow: '0 4px 15px rgba(0,0,0,0.08)'
+        boxShadow: '0 4px 15px rgba(22, 51, 36, 0.08)'
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'translateY(-8px)';
-        e.currentTarget.style.boxShadow = '0 12px 35px rgba(102, 126, 234, 0.2)';
+        e.currentTarget.style.boxShadow = '0 12px 35px rgba(31, 111, 67, 0.18)';
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.08)';
+        e.currentTarget.style.boxShadow = '0 4px 15px rgba(22, 51, 36, 0.08)';
       }}>
         
         {/* Item Image */}
@@ -75,7 +75,7 @@ const ItemCard = ({ item, currentUser, isOwner }) => {
               onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
               onError={(e) => {
                 e.target.style.display = 'none';
-                e.target.parentElement.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)"><div class="text-center text-white"><i class="fas fa-image fa-3x mb-2 opacity-50"></i><div class="small">Зураг ачаалагдсангүй</div></div></div>';
+                e.target.parentElement.innerHTML = '<div class="item-card-placeholder d-flex align-items-center justify-content-center h-100"><div class="text-center text-white"><i class="fas fa-image fa-3x mb-2 opacity-50"></i><div class="small">Зураг ачаалагдсангүй</div></div></div>';
               }}
             />
             <div className="position-absolute top-0 start-0 w-100 h-100" 
@@ -85,10 +85,9 @@ const ItemCard = ({ item, currentUser, isOwner }) => {
           </div>
         ) : (
           <div 
-            className="d-flex align-items-center justify-content-center"
+            className="d-flex align-items-center justify-content-center item-card-placeholder"
             style={{ 
-              height: '220px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              height: '220px'
             }}
           >
             <div className="text-center text-white">
@@ -136,7 +135,6 @@ const ItemCard = ({ item, currentUser, isOwner }) => {
           <div className="d-flex align-items-center mb-2">
             <span className="badge text-white me-2" 
                   style={{
-                    background: 'linear-gradient(45deg, #667eea, #764ba2)',
                     borderRadius: '12px',
                     fontSize: '0.75rem',
                     padding: '0.4rem 0.8rem'
@@ -178,7 +176,7 @@ const ItemCard = ({ item, currentUser, isOwner }) => {
               <div className="me-2" style={{
                 width: '36px', 
                 height: '36px',
-                background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                background: 'linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 62%, var(--bs-warning) 100%)',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
@@ -187,7 +185,7 @@ const ItemCard = ({ item, currentUser, isOwner }) => {
                 <i className="fas fa-user text-white"></i>
               </div>
               <div>
-                <div className="small text-muted">Зарласан</div>
+                <div className="small text-muted">Нийтэлсэн</div>
                 <div className="fw-bold text-dark" style={{ fontSize: '0.9rem' }}>
                   {item.owner?.name || item.owner?.username || 'Хэрэглэгч'}
                 </div>
@@ -196,9 +194,8 @@ const ItemCard = ({ item, currentUser, isOwner }) => {
 
             <Link
               to={isItemOwner ? `/edit-item/${item._id}` : `/item/${item._id}`}
-              className="btn btn-sm text-white"
+              className={`btn btn-sm text-white item-card-action ${isItemOwner ? 'is-owner' : ''}`}
               style={{ 
-                background: isItemOwner ? 'linear-gradient(45deg, #28a745, #20c997)' : 'linear-gradient(45deg, #667eea, #764ba2)',
                 border: 'none',
                 borderRadius: '20px',
                 padding: '0.5rem 1rem',
@@ -208,7 +205,7 @@ const ItemCard = ({ item, currentUser, isOwner }) => {
               }}
               onMouseEnter={(e) => {
                 e.target.style.transform = 'scale(1.05)';
-                e.target.style.boxShadow = isItemOwner ? '0 4px 15px rgba(40, 167, 69, 0.4)' : '0 4px 15px rgba(102, 126, 234, 0.4)';
+                e.target.style.boxShadow = isItemOwner ? '0 4px 15px rgba(199, 154, 42, 0.32)' : '0 4px 15px rgba(31, 111, 67, 0.32)';
               }}
               onMouseLeave={(e) => {
                 e.target.style.transform = 'scale(1)';

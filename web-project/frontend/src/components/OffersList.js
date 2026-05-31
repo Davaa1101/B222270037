@@ -167,14 +167,14 @@ const OffersList = () => {
       
       <div className="card border-0 shadow-sm" style={{ borderRadius: '20px' }}>
         <div className="card-header border-0" style={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 54%, var(--bs-warning) 100%)',
           color: 'white',
           padding: '1.5rem',
           borderRadius: '20px 20px 0 0'
         }}>
           <h3 className="mb-0">
             <i className="fas fa-envelope me-2"></i>
-            {itemId ? 'Зарын саналууд' : 'Миний саналууд'}
+            {itemId ? 'Зарлалын саналууд' : 'Миний саналууд'}
           </h3>
         </div>
 
@@ -186,10 +186,10 @@ const OffersList = () => {
                   className={`nav-link ${activeTab === 'received' ? 'active' : ''}`}
                   onClick={() => setActiveTab('received')}
                   style={{
-                    border: 'none',
-                    borderBottom: activeTab === 'received' ? '3px solid #667eea' : 'none',
-                    color: activeTab === 'received' ? '#667eea' : '#6c757d'
-                  }}
+                      border: 'none',
+                      borderBottom: activeTab === 'received' ? `3px solid var(--bs-primary)` : 'none',
+                      color: activeTab === 'received' ? 'var(--bs-primary)' : '#6c757d'
+                    }}
                 >
                   <i className="fas fa-inbox me-2"></i>Хүлээн авсан ({offers.filter(_o => activeTab === 'received').length})
                 </button>
@@ -199,10 +199,10 @@ const OffersList = () => {
                   className={`nav-link ${activeTab === 'sent' ? 'active' : ''}`}
                   onClick={() => setActiveTab('sent')}
                   style={{
-                    border: 'none',
-                    borderBottom: activeTab === 'sent' ? '3px solid #667eea' : 'none',
-                    color: activeTab === 'sent' ? '#667eea' : '#6c757d'
-                  }}
+                      border: 'none',
+                      borderBottom: activeTab === 'sent' ? `3px solid var(--bs-primary)` : 'none',
+                      color: activeTab === 'sent' ? 'var(--bs-primary)' : '#6c757d'
+                    }}
                 >
                   <i className="fas fa-paper-plane me-2"></i>Илгээсэн ({offers.filter(_o => activeTab === 'sent').length})
                 </button>
@@ -234,10 +234,10 @@ const OffersList = () => {
                                 {getStatusBadge(offer.status)}
                               </div>
                               <small className="text-muted d-block mb-2">
-                                {activeTab === 'received' ? 'Таны зар' : 'Сонирхож буй зар'}
+                                {activeTab === 'received' ? 'Таны зарлал' : 'Сонирхож буй зарлал'}
                               </small>
                               <p className="text-muted small mb-2">
-                                {truncateText(offer.item?.description || 'Зарын дэлгэрэнгүй тайлбар нэмэгдээгүй байна.', 120)}
+                                {truncateText(offer.item?.description || 'Зарлалын дэлгэрэнгүй тайлбар нэмэгдээгүй байна.', 120)}
                               </p>
                               <small className="text-muted d-block">
                                 <i className="fas fa-map-marker-alt me-1"></i>
@@ -390,7 +390,7 @@ const OffersList = () => {
                   <div className="col-lg-5">
                     <div className="border rounded-4 p-3 h-100">
                       <div className="d-flex align-items-center justify-content-between mb-3">
-                        <h6 className="mb-0 fw-bold">Санал авсан зар</h6>
+                        <h6 className="mb-0 fw-bold">Санал авсан зарлал</h6>
                         {getStatusBadge(selectedOffer.status)}
                       </div>
                       {selectedOffer.item?.images?.length > 0 ? (

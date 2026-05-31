@@ -37,14 +37,14 @@ const MakeOffer = () => {
     try {
       const data = await itemService.getItem(itemId);
       if (data.owner._id === user.id || data.owner._id === user._id) {
-        setAlert({ message: 'Өөрийн зар дээр санал илгээх боломжгүй', type: 'error' });
+        setAlert({ message: 'Өөрийн зарлал дээр санал илгээх боломжгүй', type: 'error' });
         setTimeout(() => navigate('/'), 2000);
         return;
       }
       setItem(data);
     } catch (error) {
       console.error('Error loading item:', error);
-      setAlert({ message: 'Зар ачаалахад алдаа гарлаа', type: 'error' });
+      setAlert({ message: 'Зарлал ачаалахад алдаа гарлаа', type: 'error' });
     }
   };
 
@@ -145,7 +145,7 @@ const MakeOffer = () => {
         <div className="card-body p-4">
           {/* Original Item Info */}
           <div className="mb-4 p-3 bg-light rounded">
-            <h5 className="fw-bold mb-2">Солилцох зар</h5>
+            <h5 className="fw-bold mb-2">Солилцох зарлал</h5>
             <div className="d-flex align-items-center">
               {item.images && item.images.length > 0 && (
                 <img
